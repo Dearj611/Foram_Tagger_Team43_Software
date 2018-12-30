@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
 ]
 
 MIDDLEWARE = [
@@ -77,11 +78,14 @@ WSGI_APPLICATION = 'projectsite.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.mysql',   # 加载驱动
+        'NAME': 'imgs',# 数据库名
+        'USER': 'root',# mysql的用户名
+        'PASSWORD': '',# mysql的密码
+        'HOST': 'localhost', # 连接地址（本地的话使用localhost或者127.0.0.1）
+        'PORT': 3306   # 数据库服务的端口号
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/2.1/ref/settings/#auth-password-validators
@@ -115,7 +119,8 @@ USE_L10N = True
 
 USE_TZ = True
 
-MEDIA_ROOT = './photos'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'images').replace('\\', '/') # media即为图片上传的根路径
+MEDIA_URL = '/images/'
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
