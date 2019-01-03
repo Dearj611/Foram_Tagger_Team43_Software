@@ -6,7 +6,7 @@ def uploadImg(request): # 图片上传函数
     if request.method == 'POST':
         img = Img(img_url=request.FILES.get('img'))
         img.save()
-    return render(request, 'imgupload.html')
+    return render(request, 'upload/imgupload.html')
     # return HttpResponseRedirect('/thanks/')
 
 def showImg(request):
@@ -14,4 +14,4 @@ def showImg(request):
     context = {
         'imgs' : imgs
     }
-    return render(request, 'showImg.html', context)
+    return render(request, 'upload/showImg.html', context)
