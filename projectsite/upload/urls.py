@@ -6,4 +6,4 @@ from upload.views import uploadImg, showImg
 urlpatterns = [
     path('', uploadImg, name='uploadImage'),
     path('show/', showImg, name='displayImage'),
-]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+]

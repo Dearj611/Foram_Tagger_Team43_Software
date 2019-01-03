@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block title %}Foram Gallery {% endblock %}
+
+{% block content %}
+<div id = #show>
+{% for item in imgs %}
+    <img src="{{ item.img_url.url }}"><br/>
+{% endfor %}
+</div>
+
+{% endblock %}
