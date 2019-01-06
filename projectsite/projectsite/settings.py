@@ -76,12 +76,15 @@ WSGI_APPLICATION = 'projectsite.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
 
+# Zong's password for this is ForamTagger123
+# mysql -u root -p
+# mysql> SHOW GLOBAL VARIABLES LIKE 'PORT'; to check for port
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',   # 加载驱动
         'NAME': 'imgs',# 数据库名
         'USER': 'root',# mysql的用户名
-        'PASSWORD': '',# mysql的密码
+        'PASSWORD': 'ForamTagger123',# mysql的密码
         'HOST': 'localhost', # 连接地址（本地的话使用localhost或者127.0.0.1）
         'PORT': 3306   # 数据库服务的端口号
     }
