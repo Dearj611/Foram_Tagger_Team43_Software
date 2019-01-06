@@ -4,45 +4,103 @@ import numpy as np
 import argparse
 import random as rng
 import math
+import os
+import statistics
+import regex as re
 from matplotlib import pyplot as plt
 rng.seed(12345)
+
 
 def pre_processing(img):
     gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
     blurred = cv.GaussianBlur(gray, (5, 5), 0)
     thresh = cv.threshold(blurred, 60, 255, cv.THRESH_BINARY)[1]
     kernel = np.ones((5,5),np.uint8)
-    thresh = cv.erode(thresh,kernel,iterations = 2)
-    thresh = cv.dilate(thresh,kernel,iterations = 3)
+    thresh = cv.erode(thresh, kernel, iterations=2)
+    thresh = cv.dilate(thresh, kernel, iterations=3)
     return thresh
 
-def get_boxes(val):
+
+def get_boxes(img, val):
+    '''
+    img provided must be grayscaled
+    '''
+    img = pre_processing(img)
     threshold = val
-    canny_output = cv.Canny(src_gray, threshold, threshold * 2)
-    _, contours, _ = cv.findContours(canny_output, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
+    canny_output = cv.Canny(img, threshold, threshold * 2)
+    _, contours, _ = cv.findContours(canny_output, cv.RETR_TREE,
+                                     cv.CHAIN_APPROX_SIMPLE)
     contours_poly = [None]*len(contours)
     boundRect = [None]*len(contours)
     for i, c in enumerate(contours):
         contours_poly[i] = cv.approxPolyDP(c, 3, True)
         boundRect[i] = cv.boundingRect(contours_poly[i])
-    print(boundRect)
+    # print(boundRect)
     return boundRect
 
-def remove_outliers(boxes):
+
+def remove_outliers(arr):
     '''
-    After getting more data, this function will use far more math
+    This uses the IQR method
     '''
-    boxes = list(zip(boxes,[i[2]*i[3] for i in boxes]))
-    mean = sum(map(lambda x:x[1],boxes))/len(boxes)
-    boxes = [i for i in boxes if i[1]>4000]
-    to_return = [i[0] for i in boxes]
-    print(to_return)
-    print(len(to_return))
+    arr = sort_by_extremes(arr)
+    mean = sum(arr)/len(arr)
+    iqr = np.percentile(arr, 75)-np.percentile(arr, 25)
+    flag = False
+    if (max(arr)-mean) > iqr*1.5 or (mean-min(arr) > iqr*1.5):
+        flag = True
+    while flag:
+        old_len = len(arr)
+        new_len = len(arr)
+        for i in range(len(arr)):
+            if abs(arr[i]-mean) > iqr*1.5:
+                arr.pop(i)
+                new_len -= 1
+                break
+        if old_len != new_len:
+            mean = sum(arr)/len(arr)
+            iqr = np.percentile(arr, 75)-np.percentile(arr, 25)
+        else:
+            break
+    return arr
+
+
+def remove_outliers_2(arr):
+    '''
+    This uses the more common IQR method
+    The above method removes way too much correct data
+    '''
+    arr = [i for i in arr if i > 1000]
+    q1 = np.percentile(arr, 25)
+    q3 = np.percentile(arr, 75)
+    iqr = q3-q1
+    min_outlier = q1 - (1.5*iqr)
+    max_outlier = q3 + (1.5*iqr)
+    arr = [i for i in arr if i < max_outlier and i > min_outlier]
+    return arr
+
+
+def sort_by_extremes(arr):
+    '''
+    a = [1,3,6,2,9,19] becomes
+    a = [1,19,2,9,3,6]
+    Helper function for remove_outliers
+    '''
+    arr = sorted(arr)
+    to_return = []
+    i = 0
+    while arr != []:
+        if i % 2 == 0:
+            to_return.append(arr.pop(0))
+        else:
+            to_return.append(arr.pop())
+        i += 1
     return to_return
+
 
 def remove_duplicates(boxes):
     '''
-    For some reason i get very similar bounding boxes
+    For some reason i get very similar bounding boxes for a single foram
     This function removes them
     '''
     boxes = sorted(boxes, key=lambda x:x[0])
@@ -55,38 +113,103 @@ def remove_duplicates(boxes):
                 to_return.append(boxes[i])
         else:
             to_return.append(boxes[i])
-    print(to_return)
     return to_return
 
-def visualize(img, boxes):
+
+def visualize_all(img, boxes):
     for i in range(len(boxes)):
         color = (rng.randint(0,256), rng.randint(0,256), rng.randint(0,256))
-        cv.rectangle(img, (int(boxes[i][0]), int(boxes[i][1])), \
+        cv.rectangle(img, (int(boxes[i][0]), int(boxes[i][1])),
           (int(boxes[i][0]+boxes[i][2]), int(boxes[i][1]+boxes[i][3])), color, 3)
-        cv.putText(img, str(i), (int(boxes[i][0]), int(boxes[i][1])), \
-            cv.FONT_HERSHEY_SIMPLEX, 1,(255,255,255),2,cv.LINE_AA)
+        cv.putText(img, str(i), (int(boxes[i][0]), int(boxes[i][1])),
+                   cv.FONT_HERSHEY_SIMPLEX, 1,(255,255,255),2,cv.LINE_AA)
     plt.imshow(img)
     plt.show()
 
+
+def visualize_one(img, box):
+    color = (rng.randint(0,256), rng.randint(0,256), rng.randint(0,256))
+    cv.rectangle(img, (int(box[0]), int(box[1])),
+          (int(box[0]+box[2]), int(box[1]+box[3])), color, 3)
+    plt.imshow(img)
+    plt.show()
+
+
 def get_forams(img, boxes):
+    '''
+    Applying the bounding boxes to the original image
+    to create a new list of images
+    '''
     forams = [img[box[1]:box[1]+box[3], box[0]:box[0]+box[2]] for box in boxes]
     return forams
 
+
 def normalize(forams, boxes):
+    '''
+    Makes the forams equal size
+    '''
     max_width = max(boxes, key=lambda x:x[2])[2]
     max_height = max(boxes, key=lambda x:x[3])[3]
     for i in range(len(boxes)):
         to_add_width = max_width-boxes[i][2]
         to_add_height = max_height-boxes[i][3]
-        cv.copyMakeBorder(forams[i], math.ceil(to_add_height/2), math.floor(to_add_height/2),\
-            math.ceil(to_add_width/2), math.ceil(to_add_width/2),cv.BORDER_CONSTANT)
+        cv.copyMakeBorder(forams[i], math.ceil(to_add_height/2), math.floor(to_add_height/2),
+            math.ceil(to_add_width/2), math.ceil(to_add_width/2), cv.BORDER_CONSTANT)
 
 
-img = cv.imread('../img/G.ruber-um-1.tif')
-src_gray = pre_processing(img)
-boxes = remove_outliers(remove_duplicates(get_boxes(100)))
-forams = get_forams(img, boxes)
-normalize(forams, boxes)
-plt.imshow(forams[6])
-plt.show()
-# visualize(img, boxes)
+def freedman_diaconis(arr):
+    '''
+    used to calculate the number of bins for a histogram
+    wiki this equation
+    '''
+    iqr = np.percentile(arr, 75)-np.percentile(arr, 25)
+    bin_width = (2*iqr)/(len(arr)**(1/3))
+    print(int(bin_width))
+    return int(bin_width)
+
+
+def some_stats(arr):
+    print('data points', len(arr))
+    print('mean', sum(arr)/len(arr))
+    # print('mode', statistics.mode(arr))
+    print('median', statistics.median(arr))
+    print('min', min(areas))
+    print('max', max(areas))
+    print('range', max(arr)-min(arr))
+    print('interquartile range', np.percentile(arr, 75)-np.percentile(arr, 25))
+    print('standard deviation', statistics.pstdev(arr))
+
+
+def get_species_name(string):
+    name = []
+    arr = string.split(' ')
+    for i in arr:
+        if re.search('[0-9]', i):
+            pass
+        elif i == 'um':
+            pass
+        else:
+            name.append(i)
+    name = ' '.join(name)
+    if ' ' not in name:
+        i = 0
+        while name[i] != '.':
+            i += 1
+        name = name[:i+1] + ' ' + name[i+1:]
+    return name
+
+#The original file I used was G.ruber-um-1.tif
+all_boxes = []
+for dirpath, directory, filename in os.walk('../img'):
+    if len(filename) == 0:
+        continue
+    for files in filename:
+        print(get_species_name(files))
+        img = cv.imread(os.path.join(dirpath, files))
+        boxes = remove_duplicates(get_boxes(img, 100))
+        all_boxes = all_boxes + get_boxes(img, 100)
+
+# areas = [i[2]*i[3] for i in all_boxes]
+# some_stats(areas)
+# areas = remove_outliers_2(areas)
+# some_stats(areas)
