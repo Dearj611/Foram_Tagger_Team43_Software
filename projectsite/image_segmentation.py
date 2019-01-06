@@ -8,6 +8,9 @@ import os
 import statistics
 import regex as re
 from matplotlib import pyplot as plt
+import django
+from upload.models import Img
+
 rng.seed(12345)
 
 
@@ -98,11 +101,12 @@ def sort_by_extremes(arr):
     return to_return
 
 
-def remove_duplicates(boxes):
+def filter_boxes(boxes):
     '''
-    For some reason i get very similar bounding boxes for a single foram
-    This function removes them
+    This function removes boxes that are too small
+    It also removes bounding boxes that essentially bound the same region
     '''
+    boxes = [arr for arr in boxes if(arr[2]*arr[3]) > 1000]
     boxes = sorted(boxes, key=lambda x:x[0])
     to_return = []
     for i in range(len(boxes)-1):
@@ -135,13 +139,17 @@ def visualize_one(img, box):
     plt.show()
 
 
-def get_forams(img, boxes):
+def get_all_forams(img, boxes):
     '''
     Applying the bounding boxes to the original image
     to create a new list of images
     '''
     forams = [img[box[1]:box[1]+box[3], box[0]:box[0]+box[2]] for box in boxes]
     return forams
+
+
+def get_forams(img, box):
+    return img[box[1]:box[1]+box[3], box[0]:box[0]+box[2]]
 
 
 def normalize(forams, boxes):
@@ -173,8 +181,8 @@ def some_stats(arr):
     print('mean', sum(arr)/len(arr))
     # print('mode', statistics.mode(arr))
     print('median', statistics.median(arr))
-    print('min', min(areas))
-    print('max', max(areas))
+    print('min', min(arr))
+    print('max', max(arr))
     print('range', max(arr)-min(arr))
     print('interquartile range', np.percentile(arr, 75)-np.percentile(arr, 25))
     print('standard deviation', statistics.pstdev(arr))
@@ -199,15 +207,52 @@ def get_species_name(string):
     return name
 
 #The original file I used was G.ruber-um-1.tif
-all_boxes = []
-for dirpath, directory, filename in os.walk('../img'):
-    if len(filename) == 0:
-        continue
-    for files in filename:
-        print(get_species_name(files))
-        img = cv.imread(os.path.join(dirpath, files))
-        boxes = remove_duplicates(get_boxes(img, 100))
-        all_boxes = all_boxes + get_boxes(img, 100)
+
+#populate('../../img', '../../segmented/')
+def populate(imgDir, toStore):
+    '''
+    The function populates the database and a directory
+    '''
+    counter = 0
+    for dirpath, directory, filename in os.walk(imgDir, toStore):
+        if len(filename) == 0:
+            continue
+        for files in filename:
+            species_name = get_species_name(files)
+            img = cv.imread(os.path.join(dirpath, files))
+            boxes = filter_boxes(get_boxes(img, 100))
+            number_of_files = len(next(os.walk(toStore))[2])
+            print(number_of_files)
+            for box in boxes:
+                img_location = toStore + str(number_of_files)
+                cv.imwrite(img_location+'.tif', get_forams(img, box))
+                new_image = Img(imgLocation=img_location, species=species_name,
+                                parentImage=os.path.join(dirpath, files))
+                new_image.save()
+                number_of_files += 1
+            parent_image = Img(imgLocation=toStore + str(number_of_files))
+            parent_image.save()
+            number_of_files += 1
+            counter += 1
+            if counter == 3:    # This counters are for testing purposes
+                break
+        if counter == 3:
+                break
+
+
+# all_boxes = []
+# counter = 0
+# path = '../img'
+# for dirpath, directory, filename in os.walk(path):
+#     if len(filename) == 0:
+#         continue
+#     for files in filename:
+#         img = cv.imread(os.path.join(dirpath, files))
+#         boxes = filter_boxes(get_boxes(img, 100))            
+        # all_boxes = all_boxes + get_boxes(img, 100)
+    # counter += 1
+    # if counter == 3:
+    #     break
 
 # areas = [i[2]*i[3] for i in all_boxes]
 # some_stats(areas)
