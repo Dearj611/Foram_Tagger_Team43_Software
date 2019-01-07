@@ -78,7 +78,7 @@ WSGI_APPLICATION = 'projectsite.wsgi.application'
 
 # Zong's password for this is ForamTagger123
 # mysql -u root -p
-# mysql> SHOW GLOBAL VARIABLES LIKE 'PORT'; to check for port
+# mysql> SHOW GLOBAL VARIABLES LIKE 'PORT'; to check what port the database is running on
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',   # 加载驱动

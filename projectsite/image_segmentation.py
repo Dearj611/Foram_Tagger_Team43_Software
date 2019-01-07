@@ -208,7 +208,7 @@ def get_species_name(string):
 
 #The original file I used was G.ruber-um-1.tif
 
-#populate('../../img', '../../segmented/')
+#image_segmentation.populate('../../img', '../../segmented/')
 def populate(imgDir, toStore):
     '''
     The function populates the database and a directory
@@ -224,8 +224,8 @@ def populate(imgDir, toStore):
             number_of_files = len(next(os.walk(toStore))[2])
             print(number_of_files)
             for box in boxes:
-                img_location = toStore + str(number_of_files)
-                cv.imwrite(img_location+'.tif', get_forams(img, box))
+                img_location = toStore + str(number_of_files) + '.tif'
+                cv.imwrite(img_location, get_forams(img, box))
                 new_image = Img(imgLocation=img_location, species=species_name,
                                 parentImage=os.path.join(dirpath, files))
                 new_image.save()
