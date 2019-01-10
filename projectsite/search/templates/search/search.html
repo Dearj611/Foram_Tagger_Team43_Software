@@ -1,11 +1,19 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="UTF-8">
-    <title>title</title>
-  </head>
-  <body>
-    {% load static %}
-    <img src="{% static "search/36.tif" %}" alt="My image">
-  </body>
-</html>
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Upload Foram Images {% endblock %}
+
+{% block content %}
+
+<header class="masthead d-flex">
+  <div class="container text-center my-auto">
+    <h1 class="mb-1">Foram-Tagger</h1>
+    <h3 class="mb-5">
+      <em>Automate the process and build a new library</em>
+    </h3>
+    <a class="btn btn-primary btn-xl js-scroll-trigger" href="{% url 'uploadImage' %}">Upload</a>
+    <a class="btn btn-primary btn-xl js-scroll-trigger" href="{% url 'searchFunction' %}">Search</a>
+    <a class="btn btn-primary btn-xl js-scroll-trigger" href="{% url 'displayImage' %}">Gallery</a>
+    <a class="check"> wANNA</a>
+</header>
+
+{% endblock %}

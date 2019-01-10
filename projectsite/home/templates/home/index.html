@@ -9,9 +9,9 @@
         <h3 class="mb-5">
           <em>Automate the process and build a new library</em>
         </h3>
-        <a class="btn btn-primary btn-xl js-scroll-trigger" href="#about">Upload</a>
-        <a class="btn btn-primary btn-xl js-scroll-trigger" href="#about">Search</a>
-        <a class="btn btn-primary btn-xl js-scroll-trigger" href="#about">Gallery</a>
+        <a class="btn btn-primary btn-xl js-scroll-trigger" href="{% url 'uploadImage' %}">Upload</a>
+        <a class="btn btn-primary btn-xl js-scroll-trigger" href="{% url 'searchFunction' %}">Search</a>
+        <a class="btn btn-primary btn-xl js-scroll-trigger" href="{% url 'displayImage' %}">Gallery</a>
     </header>
 
 {% endblock %}
