@@ -2,9 +2,12 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from upload.models import Img
 
-def index(request):
-    return HttpResponse("Hello, world. You're at the polls index.")
 
+def searchImage(request):
+    return render(request, 'search/search.html')
+
+def dummy(request):
+    pass
 
 def search(species, count):
     '''

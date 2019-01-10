@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+# base_dir = /home/camelcars/Documents/ucl2/systemsEng/software_FT
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
@@ -39,7 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'home',
+    'home'
 ]
 
 MIDDLEWARE = [
@@ -122,8 +123,10 @@ USE_L10N = True
 
 USE_TZ = True
 
+#MEDIA_ROOT this is the absolute path to the folder that will hold our user uploads. 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'images').replace('\\', '/') # media即为图片上传的根路径
 MEDIA_URL = '/images/'
+#MEDIA_URL this is the relative browser URL to be used when accessing our media files in the browser.
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
