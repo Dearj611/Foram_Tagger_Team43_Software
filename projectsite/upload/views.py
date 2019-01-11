@@ -2,12 +2,13 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from upload.models import Img
 from .forms import ImageUploadForm
+from common import segmentation as seg
 
 def uploadImg(request): # 图片上传函数
     if request.method == 'POST':
         print(request.FILES.get('img'))
-        img = Img(imgLocation=request.FILES.get('img'))
-        img.save()
+        forams = seg.get_all_forams(request.FILES.get('img'))
+        print(forams)
     return render(request, 'upload/imgUpload.html')
     # return HttpResponseRedirect('/thanks/')
 
