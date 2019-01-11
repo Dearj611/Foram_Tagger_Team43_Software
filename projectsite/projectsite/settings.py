@@ -84,7 +84,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',   # 加载驱动
         'NAME': 'imgs',# 数据库名
         'USER': 'root',# mysql的用户名
-        'PASSWORD': '',# mysql的密码
+        'PASSWORD': 'ForamTagger123',# mysql的密码
         'HOST': 'localhost', # 连接地址（本地的话使用localhost或者127.0.0.1）
         'PORT': 3306   # 数据库服务的端口号
     }
@@ -122,8 +122,8 @@ USE_L10N = True
 
 USE_TZ = True
 
-MEDIA_ROOT = os.path.join(BASE_DIR, 'images').replace('\\', '/') # media即为图片上传的根路径
-MEDIA_URL = '/images/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media').replace('\\', '/') # media即为图片上传的根路径
+MEDIA_URL = '/media/'
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
