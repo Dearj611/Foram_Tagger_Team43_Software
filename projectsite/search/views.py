@@ -3,7 +3,7 @@ from django.http import HttpResponse
 from upload.models import Img
 
 
-def searchImage(request):
+def index(request):
     return render(request, 'search/search.html')
 
 def dummy(request):

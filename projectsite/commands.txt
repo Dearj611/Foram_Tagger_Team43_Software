@@ -1,0 +1,6 @@
+Notes for frequently used commands
+image_segmentation.populate('../../img', '../../segmented/')
+from upload.models import Img
+Img.objects.all().values_list('species', flat=True)
+'G. truncatulinoides'
+Img.objects.filter(species='G. truncatulinoides')
