@@ -3,10 +3,28 @@
 {% block title %}Foram Gallery {% endblock %}
 
 {% block content %}
-<div id = #show>
+
+<section id="portfolio">
+
+  <div class="section-header">
+    <h3 class="section-title">Foram Gallery</h3>
+    <p class="section-description">View all the forams in the database.</p>
+  </div>
+
+
+<div class="row" id="portfolio-wrapper">
 {% for item in imgs %}
+<div class="col-lg-3 col-md-6 portfolio-item">
+  <a href="">
     <img src="{{ item.img_url.url }}"><br/>
+    <div class="details">
+      <h4>Species Name</h4>
+      <span>Description</span>
+    </div>
+  </a>
+</div>
 {% endfor %}
 </div>
+</section><!-- #portfolio -->
 
 {% endblock %}
