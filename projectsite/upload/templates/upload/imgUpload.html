@@ -9,13 +9,19 @@
 
 {% block content %}
 
+<section id="upload">
+<div class="section-header">
+  <h3 class="section-title">Upload Images</h3>
+  <p class="section-description">Upload raw foram images for segmentation and identification. </p>
+</div>
+
 <div class="container">
       <div class="panel panel-default">
-        <div class="panel-heading"><strong>Upload Files</strong> <small>Bootstrap files upload</small></div>
-        <div class="panel-body">
 
+        <div class="panel-body">
           <!-- Standar Form -->
-          <h4>Select files from your computer</h4>
+          <div class="upload_sec">
+          <h3>Select files from your computer</h3>
           <form action="" method="post" enctype="multipart/form-data" id="js-upload-form">
             {% csrf_token %}
             <div class="form-inline">
@@ -25,14 +31,16 @@
               <input type="submit" value="submit">
             </div>
           </form>
+          </div>
 
           <!-- Drop Zone -->
+          <div class="upload_sec">
           <form action="" method="post" enctype="multipart/form-data" id="js-upload-form">
-          <div class="layui-upload-drag" id="test10">
-            <i class="layui-icon"></i>
+          <div class="upload-drop-zone" id="test10">
             <p>Drag and drop your image here</p>
           </div>
         </form>
+        </div>
 
 
           <!-- Upload Finished -->
@@ -47,11 +55,7 @@
       </div>
     </div> <!-- /container -->
 
-<form action="" method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    <input type="file" name="img">
-    <input type="submit" value="submit">
-</form>
+</section>
 
 {% endblock %}
 
