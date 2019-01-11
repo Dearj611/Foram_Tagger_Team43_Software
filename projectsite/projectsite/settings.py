@@ -40,7 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'home'
+    'home',
 ]
 
 MIDDLEWARE = [
@@ -85,7 +85,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',   # 加载驱动
         'NAME': 'imgs',# 数据库名
         'USER': 'root',# mysql的用户名
-        'PASSWORD': '',# mysql的密码
+        'PASSWORD': 'ForamTagger123',# mysql的密码
         'HOST': 'localhost', # 连接地址（本地的话使用localhost或者127.0.0.1）
         'PORT': 3306   # 数据库服务的端口号
     }
