@@ -1,7 +1,6 @@
 from __future__ import print_function
 import cv2 as cv
 import numpy as np
-import argparse
 import random as rng
 import math
 import os
@@ -224,6 +223,7 @@ def populate(imgDir, toStore):
             number_of_files = len(next(os.walk(toStore))[2])
             parent_location = number_of_files
             parent_image = Img(imgLocation=toStore + str(parent_location))
+            parent_image.save()
             for box in boxes:
                 img_location = toStore + str(number_of_files) + '.tif'
                 cv.imwrite(img_location, get_forams(img, box))
@@ -232,8 +232,6 @@ def populate(imgDir, toStore):
                                 parentImage=toStore + str(parent_location))
                 new_image.save()
                 number_of_files += 1
-            parent_image = Img(imgLocation=toStore + str(number_of_files))
-            parent_image.save()
             number_of_files += 1
             counter += 1
             if counter == 2:    # This counters are for testing purposes
