@@ -8,8 +8,8 @@ import os
 import statistics
 import regex as re
 from matplotlib import pyplot as plt
-# from django.conf import settings
-# from upload.models import Img
+from django.conf import settings
+from upload.models import Img
 
 rng.seed(12345)
 
@@ -222,25 +222,27 @@ def populate(imgDir, toStore):
             img = cv.imread(os.path.join(dirpath, files))
             boxes = filter_boxes(get_boxes(img, 100))
             number_of_files = len(next(os.walk(toStore))[2])
-            # print(number_of_files)
-            visualize_all(img, boxes)
+            parent_location = number_of_files
+            parent_image = Img(imgLocation=toStore + str(parent_location))
             for box in boxes:
-                visualize_one(img, box)
                 img_location = toStore + str(number_of_files) + '.tif'
                 cv.imwrite(img_location, get_forams(img, box))
-                new_image = Img(imgLocation=img_location, species=species_name,
-                                parentImage=os.path.join(dirpath, files))
+                new_image = Img(imgLocation=img_location,
+                                species=species_name,
+                                parentImage=toStore + str(parent_location))
                 new_image.save()
                 number_of_files += 1
             parent_image = Img(imgLocation=toStore + str(number_of_files))
             parent_image.save()
             number_of_files += 1
             counter += 1
-            if counter == 3:    # This counters are for testing purposes
+            if counter == 2:    # This counters are for testing purposes
                 break
-        if counter == 3:
+        if counter == 2:
                 break
 
+
+#populate_2('../../img', './media/segment/')
 def populate_2(imgDir, toStore):
     '''
     The function populates the database and a directory
@@ -272,7 +274,7 @@ def populate_2(imgDir, toStore):
                 break
 
 
-populate('../../img/1_33e7cd', '../../segmented')
+# populate('../../img/1_33e7cd', '../../segmented')
 # all_boxes = []
 # counter = 0
 # path = '../img'
