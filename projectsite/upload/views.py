@@ -3,12 +3,15 @@ from django.shortcuts import render
 from upload.models import Img
 from .forms import ImageUploadForm
 from common import segmentation as seg
+import os
+from pathlib import Path
+
 
 def uploadImg(request): # 图片上传函数
-    if request.method == 'POST':
-        print(request.FILES.get('img'))
+    if request.method == 'POST':        
         forams = seg.get_all_forams(request.FILES.get('img'))
-        print(forams)
+        _, file_ext = os.path.splitext(request.FILES.get('img').name)
+        print(file_ext)
     return render(request, 'upload/imgUpload.html')
     # return HttpResponseRedirect('/thanks/')
 

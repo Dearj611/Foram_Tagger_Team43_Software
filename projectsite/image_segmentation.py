@@ -240,37 +240,6 @@ def populate(imgDir, toStore):
                 break
 
 
-#populate_2('../../img', './media/segment/')
-def populate_2(imgDir, toStore):
-    '''
-    The function populates the database and a directory
-    '''
-    counter = 0
-    for dirpath, directory, filename in os.walk(imgDir):
-        if len(filename) == 0:
-            continue
-        for files in filename:
-            species_name = get_species_name(files)
-            img = cv.imread(os.path.join(dirpath, files))
-            boxes = filter_boxes(get_boxes(img, 100))
-            number_of_files = len(next(os.walk(toStore))[2])
-            print(number_of_files)
-            for box in boxes:
-                img_location = toStore + str(number_of_files) + '.tif'
-                cv.imwrite(img_location, get_forams(img, box))
-                new_image = Img(imgLocation=img_location, species=species_name,
-                                parentImage=os.path.join(dirpath, files))
-                new_image.save()
-                number_of_files += 1
-            parent_image = Img(imgLocation=toStore + str(number_of_files))
-            parent_image.save()
-            number_of_files += 1
-            counter += 1
-            if counter == 3:    # This counters are for testing purposes
-                break
-        if counter == 3:
-                break
-
 
 # populate('../../img/1_33e7cd', '../../segmented')
 # all_boxes = []
