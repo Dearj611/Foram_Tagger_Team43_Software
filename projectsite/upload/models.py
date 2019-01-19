@@ -11,4 +11,4 @@ class ImgParent(models.Model):
 class Img(models.Model):
     imgLocation = models.ImageField(upload_to='segment', default='None')
     species = models.CharField(max_length=30, default='None')
-    parentImage = models.ForeignKey(ImgParent, on_delete=models.CASCADE)
+    parentImage = models.ForeignKey(ImgParent, on_delete=models.CASCADE, null=True)
