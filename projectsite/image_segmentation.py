@@ -139,15 +139,6 @@ def visualize_one(img, box):
     plt.show()
 
 
-def get_all_forams(img, boxes):
-    '''
-    Applying the bounding boxes to the original image
-    to create a new list of images
-    '''
-    forams = [img[box[1]:box[1]+box[3], box[0]:box[0]+box[2]] for box in boxes]
-    return forams
-
-
 def get_forams(img, box):
     return img[box[1]:box[1]+box[3], box[0]:box[0]+box[2]]
 
@@ -206,40 +197,63 @@ def get_species_name(string):
         name = name[:i+1] + ' ' + name[i+1:]
     return name
 
+
+def get_all_forams(img):
+    '''
+    Applying the bounding boxes to the original image
+    to create a new list of images
+    '''
+    boxes = filter_boxes(get_boxes(img, 100))
+    forams = [img[box[1]:box[1]+box[3], box[0]:box[0]+box[2]] for box in boxes]
+    return forams
+
+
+def store_to_db(parent_img, forams, species, toStore, ext):
+    '''
+    parent_img: the original image
+    forams: numpy array
+    toStore: directory to store in
+    ext: the file extension
+'''
+    number_of_files = len([name for name in os.listdir('.') if os.path.isfile(name)])
+    parent_location = os.path.join(toStore, str(number_of_files) + ext
+    cv.imwrite(parent_location, parent_img)
+    parent_image = ImgParent(imgLocation=parent_location)
+    parent_image.save()
+    number_of_files += 1
+    for foram in forams:    #stores segmented images
+        img_location = os.path.join(toStore, str(number_of_files)) + ext
+        cv.imwrite(img_location, foram)
+        new_image = Img(imgLocation=img_location,
+                        species=species,
+                        parentImage=parent_image)
+        new_image.save()
+        number_of_files += 1
+
 #The original file I used was G.ruber-um-1.tif
 #toStore = 
-def populate(imgDir, toStore):
+def get_and_store(imgDir, toStore):
     '''
     The function populates the database and a directory
+    imgDir: the source of all the parent images
+    toStore: the directory where you want to store the images
     '''
     counter = 0
     for dirpath, directory, filename in os.walk(imgDir):
         if len(filename) == 0:
             continue
-        for files in filename:
-            species_name = get_species_name(files)
-            img = cv.imread(os.path.join(dirpath, files))
-            boxes = filter_boxes(get_boxes(img, 100))
-            number_of_files = len(next(os.walk(toStore))[2])
-            parent_location = number_of_files
-            parent_image = Img(imgLocation=toStore + str(parent_location))
-            parent_image.save()
-            for box in boxes:
-                img_location = toStore + str(number_of_files) + '.tif'
-                cv.imwrite(img_location, get_forams(img, box))
-                new_image = Img(imgLocation=img_location,
-                                species=species_name,
-                                parentImage=toStore + str(parent_location))
-                new_image.save()
-                number_of_files += 1
-            number_of_files += 1
-            counter += 1
-            if counter == 2:    # This counters are for testing purposes
-                break
+        for files in filename:  # filename is a list of files
+            parent_img = cv.imread(os.path.join(dirpath, files))
+            forams = get_all_forams(parent_img)
+            store_to_db(parent_img, forams, get_species_name(files), toStore,
+                        os.path.splitext(files))
         if counter == 2:
-                break
+            break
+        else:
+            counter += 1
 
 
+    
 
 # populate('../../img/1_33e7cd', '../../segmented')
 # all_boxes = []

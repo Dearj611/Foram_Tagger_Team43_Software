@@ -72,24 +72,24 @@ def get_all_forams(uploaded_file):
     return forams
 
     
-def store_to_db(img, forams, toStore, ext):
+def store_to_db(parent_img, forams, species, toStore, ext):
     '''
-    img: the original image
+    parent_img: the original image
     forams: numpy array
     toStore: directory to store in
     ext: the file extension
-    '''
-    number_of_files = len(next(os.walk(toStore))[2])
-    parent_location = os.path.join(toStore, str(number_of_files), ext)
-    cv.imwrite(parent_location, img)
+'''
+    number_of_files = len([name for name in os.listdir('.') if os.path.isfile(name)])
+    parent_location = os.path.join(toStore, str(number_of_files)) + ext
+    cv.imwrite(parent_location, parent_img)
     parent_image = ImgParent(imgLocation=parent_location)
     parent_image.save()
     number_of_files += 1
     for foram in forams:    #stores segmented images
-        img_location = os.path.join(toStore, str(number_of_files), ext)
+        img_location = os.path.join(toStore, str(number_of_files)) + ext
         cv.imwrite(img_location, foram)
         new_image = Img(imgLocation=img_location,
-                        species='G. ruber',         # this name is temporary
+                        species=species,         # this name is temporary
                         parentImage=parent_image)
         new_image.save()
         number_of_files += 1
