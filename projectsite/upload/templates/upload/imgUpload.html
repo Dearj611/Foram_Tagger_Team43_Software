@@ -4,7 +4,6 @@
 {% block title %}Upload Photo {% endblock %}
 {% block header %}
 <link href="//netdna.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
-<link rel="stylesheet" href="{% static 'css/layui.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -20,7 +19,7 @@
 
         <div class="panel-body">
           <!-- Standar Form -->
-          <div class="upload_sec">
+          <!--<div class="upload_sec">
           <h3>Select files from your computer</h3>
           <form action="" method="post" enctype="multipart/form-data" id="js-upload-form">
             {% csrf_token %}
@@ -31,25 +30,47 @@
               <input type="submit" value="submit">
             </div>
           </form>
-          </div>
+          </div>-->
+
+          <button type="button" class="btn btn-primary js-upload-photos">
+            <span class="glyphicon glyphicon-cloud-upload"></span> Upload photos
+          </button>
 
           <!-- Drop Zone -->
           <div class="upload_sec">
-          <form action="" method="post" enctype="multipart/form-data" id="js-upload-form">
-          <div class="upload-drop-zone" id="test10">
-            <p>Drag and drop your image here</p>
+            <div class="upload-drop-zone">
+            <p>Drop Photos Here to Upload</p>
+              </div>
           </div>
-        </form>
-        </div>
 
+          <input id="fileupload" type="file" name="imgLocation" multiple
+                 style="display: none;"
+                 data-url="{% url 'uploadImage' %}"
+                 data-form-data='{"csrfmiddlewaretoken": "{{ csrf_token }}"}'>
+
+          <table id="gallery" class="table table-bordered">
+         <thead>
+           <tr>
+             <th>Photo</th>
+           </tr>
+         </thead>
+         <tbody>
+           {% for photo in photos %}
+             <tr>
+               <td><a href="{{ photo.imgLocation.url }}">{{ photo.imgLocation.name }}</a></td>
+             </tr>
+           {% endfor %}
+         </tbody>
+       </table>
 
           <!-- Upload Finished -->
           <div class="js-upload-finished">
             <h3>Processed files</h3>
+            {% for photo in photos %}
             <div class="list-group">
-              <a href="#" class="list-group-item list-group-item-success"><span class="badge alert-success pull-right">Success</span>image-01.jpg</a>
-              <a href="#" class="list-group-item list-group-item-success"><span class="badge alert-success pull-right">Success</span>image-02.jpg</a>
+              <a href="{{ photo.imgLocation.url }}" class="list-group-item list-group-item-success"><span class="badge alert-success pull-right">Success</span>{{ photo.imgLocation.name }}</a>
             </div>
+            {% endfor %}
           </div>
         </div>
       </div>
@@ -60,21 +81,11 @@
 {% endblock %}
 
 {% block scripts %}
-<script type="text/javascript" src="{% static 'js/layui.js' %}" charset="utf-8"></script>
-<script type="text/javascript">
 
-  layui.use('upload', function(){
-    var $ = layui.jquery
-    ,upload = layui.upload;
+  <script src="{% static 'js/js_upload/vendor/jquery.ui.widget.js' %}"></script>
+  <script src="{% static 'js/js_upload/jquery.iframe-transport.js' %}"></script>
+  <script src="{% static 'js/js_upload/jquery.fileupload.js' %}"></script>
+  <script src="{% static '/js/basic-upload.js' %}"></script>
 
-    upload.render({
-      elem: '#test10'
-      ,url: '/upload/'
-      ,done: function(res){
-        console.log(res)
-      }
-    });
 
-  });
-</script>
 {% endblock %}

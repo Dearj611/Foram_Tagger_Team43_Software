@@ -286,3 +286,13 @@ h6 {
   padding-bottom: 40px;
   color: #999;
 }
+
+/* Search Section
+--------------------------------*/
+#search {
+  padding: 80px 0;
+}
+
+#search .btn_color{
+  background: #1D809F;
+}
