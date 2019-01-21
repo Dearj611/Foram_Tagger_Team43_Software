@@ -36,3 +36,4 @@ coverage.xml
 .ipynb_checkpoints
 
 node_modules/
+migrations/
