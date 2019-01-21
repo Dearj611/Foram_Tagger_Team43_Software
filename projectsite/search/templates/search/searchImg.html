@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block title %}Search {% endblock %}
+
+{% block content %}
+
+<section id="search">
+
+  <div class="section-header">
+    <h3 class="section-title">Search</h3>
+    <p class="section-description">Search the forams in the library. </p>
+  </div>
+
+  <div class="container">
+    <div class="panel panel-default">
+      <div class="panel-body">
+
+          <form class="card card-sm">
+            <div class="card-body row no-gutters align-items-center">
+              <div class="col-auto">
+                <i class="fas fa-search h4 text-body"></i>
+              </div>
+              <form method="GET" action="{% url 'searchFunction' %}" enctype="multipart/form-data">
+                {% csrf_token %}
+              <div class="col">
+                <input class="form-control form-control-lg form-control-borderless" type="text" name="search" placeholder="Search">
+              </div>
+              <div class="col-auto">
+                <button class="btn btn-lg btn-success btn_color" type="submit">Search</button>
+              </div>
+            </form>
+            </div>
+          </form>
+
+          {% if forams %}
+          {% for each_foram in forams %}
+            <img src="{{each_foram.imageLocation.url}}" alt="No Image"></a>
+            <p>{{each_book.species}}</p>
+      {% endfor %}
+      {% endif %}
+
+      </div>
+    </div> <!-- /container -->
+</div>
+</section>
+
+{% endblock %}
