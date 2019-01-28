@@ -1,11 +1,11 @@
 from __future__ import print_function
 import cv2 as cv
 import numpy as np
-import os
-from django.conf import settings
-from upload.models import Img, ImgParent
+import os, errno
+from upload.models import Img, ImgParent, Species
 import tempfile
-from matplotlib import pyplot as plt
+import uuid
+from django.db.models import F
 
 
 def pre_processing(img):
@@ -78,18 +78,41 @@ def store_to_db(parent_img, forams, species, toStore, ext):
     forams: numpy array
     toStore: directory to store in
     ext: the file extension
-'''
-    number_of_files = len([name for name in os.listdir('.') if os.path.isfile(name)])
-    parent_location = os.path.join(toStore, str(number_of_files)) + ext
+    The first part stores the parent image in the parent dir
+    the For loop stores the segmented images
+    '''
+    try:
+        species_obj = Species.objects.get(name=species)
+    except Species.DoesNotExist:
+        species_obj = Species(name=species, total=0)
+        species_obj.save()
+    species_counter = 0
+    parent_dir = os.path.join(toStore, 'parent')
+    try:
+        os.mkdir(parent_dir)
+    except OSError as e:
+        if e.errno != errno.EEXIST:
+            raise
+    parent_location = os.path.join(parent_dir, uuid.uuid4().hex) + ext
     cv.imwrite(parent_location, parent_img)
     parent_image = ImgParent(imgLocation=parent_location)
     parent_image.save()
-    number_of_files += 1
-    for foram in forams:    #stores segmented images
-        img_location = os.path.join(toStore, str(number_of_files)) + ext
+    try:
+        os.mkdir(os.path.join(toStore, species))    # create child directory    
+    except OSError as e:
+        if e.errno != errno.EEXIST:
+            raise
+    for foram in forams:    # stores segmented images
+        filename = uuid.uuid4().hex
+        img_location = os.path.join(toStore, 'train', species, filename) + ext
         cv.imwrite(img_location, foram)
         new_image = Img(imgLocation=img_location,
-                        species=species,         # this name is temporary
+                        species=species_obj,
                         parentImage=parent_image)
+        species_counter += 1
         new_image.save()
-        number_of_files += 1
+    species_obj.total = F('total') + species_counter
+    species_obj.save()
+
+
+    
