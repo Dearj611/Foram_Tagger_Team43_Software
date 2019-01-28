@@ -14,7 +14,8 @@ Essentially nukes your database. worst case scenario
 ./manage.py reset_db 
 
 python manage.py flush
-
+./manage.py test
+./manage.py migrate my_app 0010_previous_migration
 Unittest
 If setUp() succeeded, tearDown() will be run whether the test method succeeded or not.
 
@@ -27,3 +28,10 @@ Atomicity ensures that partial operation occurs during a transaction
 removes file from git repository but not from filesystem
 git rm --cached file1.txt
 git commit -m "remove file1.txt"
+
+from importlib import reload
+
+Img.objects.values_list('species', flat=True).distinct()
+There are currently 17 species
+
+num = [(str(species), len(Img.objects.all().filter(species=species))) for species in all_species]
