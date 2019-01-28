@@ -3,15 +3,16 @@ import cv2 as cv
 import numpy as np
 import random as rng
 import math
-import os
+import os, errno
 import statistics
 import regex as re
 from matplotlib import pyplot as plt
 from django.conf import settings
-from upload.models import Img
+from upload.models import Img, ImgParent, Species
+import uuid
+from django.db.models import F
 
 rng.seed(12345)
-
 
 def pre_processing(img):
     gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
@@ -70,7 +71,7 @@ def remove_outliers(arr):
 def remove_outliers_2(arr):
     '''
     This uses the more common IQR method
-    The above method removes way too much correct data
+    The other remove_outliers method removes way too much correct data
     '''
     arr = [i for i in arr if i > 1000]
     q1 = np.percentile(arr, 25)
@@ -80,6 +81,14 @@ def remove_outliers_2(arr):
     max_outlier = q3 + (1.5*iqr)
     arr = [i for i in arr if i < max_outlier and i > min_outlier]
     return arr
+
+def get_outliers(arr):
+    q1 = np.percentile(arr, 25)
+    q3 = np.percentile(arr, 75)
+    iqr = q3-q1
+    min_outlier = q1 - (1.5*iqr)
+    max_outlier = q3 + (1.5*iqr)
+    return min_outlier, max_outlier
 
 
 def sort_by_extremes(arr):
@@ -214,24 +223,46 @@ def store_to_db(parent_img, forams, species, toStore, ext):
     forams: numpy array
     toStore: directory to store in
     ext: the file extension
-'''
-    number_of_files = len([name for name in os.listdir('.') if os.path.isfile(name)])
-    parent_location = os.path.join(toStore, str(number_of_files) + ext
+    The first part stores the parent image in the parent dir
+    the For loop stores the segmented images
+    '''
+    try:
+        species_obj = Species.objects.get(name=species)
+    except Species.DoesNotExist:
+        species_obj = Species(name=species, total=0)
+        species_obj.save()
+    species_counter = 0
+    parent_dir = os.path.join(toStore, 'parent')
+    try:
+        os.mkdir(parent_dir)
+    except OSError as e:
+        if e.errno != errno.EEXIST:
+            raise
+    parent_location = os.path.join(parent_dir, uuid.uuid4().hex) + ext
     cv.imwrite(parent_location, parent_img)
     parent_image = ImgParent(imgLocation=parent_location)
     parent_image.save()
-    number_of_files += 1
-    for foram in forams:    #stores segmented images
-        img_location = os.path.join(toStore, str(number_of_files)) + ext
+    try:
+        os.mkdir(os.path.join(toStore, species))    # create child directory    
+    except OSError as e:
+        if e.errno != errno.EEXIST:
+            raise
+    for foram in forams:    # stores segmented images
+        filename = uuid.uuid4().hex
+        img_location = os.path.join(toStore, 'train', species, filename) + ext
         cv.imwrite(img_location, foram)
         new_image = Img(imgLocation=img_location,
-                        species=species,
+                        species=species_obj,
                         parentImage=parent_image)
+        species_counter += 1
         new_image.save()
-        number_of_files += 1
+    species_obj.total = F('total') + species_counter
+    species_obj.save()
 
-#The original file I used was G.ruber-um-1.tif
-#toStore = 
+    
+# The original file I used was G.ruber-um-1.tif
+# toStore = 
+# get_and_store('../../img', './media')
 def get_and_store(imgDir, toStore):
     '''
     The function populates the database and a directory
@@ -246,31 +277,24 @@ def get_and_store(imgDir, toStore):
             parent_img = cv.imread(os.path.join(dirpath, files))
             forams = get_all_forams(parent_img)
             store_to_db(parent_img, forams, get_species_name(files), toStore,
-                        os.path.splitext(files))
-        if counter == 2:
-            break
-        else:
-            counter += 1
+                        os.path.splitext(files)[1])
 
 
-    
+def filter_table():
+    '''
+    Removes images that are too small and outliers from the database
+    '''
+    all_species = Img.objects.values_list('species', flat=True).distinct()
+    for species in all_species:
+        all_objects = Img.objects.all().filter(species=species)
+        img = [cv.imread(str(img.imgLocation)) for img in all_objects]
+        all_dimensions = [i.shape[0]*i.shape[1] for i in img]
+        min_outlier, max_outlier = get_outliers(all_dimensions)
+        for i in all_objects:
+            img = cv.imread(str(i.imgLocation))
+            dimensions = img.shape[0] * img.shape[1]
+            if dimensions < 1000:
+                i.delete()
+            elif dimensions < min_outlier or dimensions > max_outlier:
+                i.delete()
 
-# populate('../../img/1_33e7cd', '../../segmented')
-# all_boxes = []
-# counter = 0
-# path = '../img'
-# for dirpath, directory, filename in os.walk(path):
-#     if len(filename) == 0:
-#         continue
-#     for files in filename:
-#         img = cv.imread(os.path.join(dirpath, files))
-#         boxes = filter_boxes(get_boxes(img, 100))            
-        # all_boxes = all_boxes + get_boxes(img, 100)
-    # counter += 1
-    # if counter == 3:
-    #     break
-
-# areas = [i[2]*i[3] for i in all_boxes]
-# some_stats(areas)
-# areas = remove_outliers_2(areas)
-# some_stats(areas)
