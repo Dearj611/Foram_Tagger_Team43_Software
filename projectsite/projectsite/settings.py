@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+# base_dir = /home/camelcars/Documents/ucl2/systemsEng/software_FT
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
@@ -79,7 +80,7 @@ WSGI_APPLICATION = 'projectsite.wsgi.application'
 
 # Zong's password for this is ForamTagger123
 # mysql -u root -p
-# mysql> SHOW GLOBAL VARIABLES LIKE 'PORT'; to check for port
+# mysql> SHOW GLOBAL VARIABLES LIKE 'PORT'; to check what port the database is running on
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',   # 加载驱动
@@ -123,8 +124,10 @@ USE_L10N = True
 
 USE_TZ = True
 
+#MEDIA_ROOT this is the absolute path to the folder that will hold our user uploads. 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media').replace('\\', '/') # media即为图片上传的根路径
 MEDIA_URL = '/media/'
+#MEDIA_URL this is the relative browser URL to be used when accessing our media files in the browser.
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
@@ -134,3 +137,5 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static"),
 ]
+
+
