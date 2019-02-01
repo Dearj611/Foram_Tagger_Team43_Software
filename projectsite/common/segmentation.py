@@ -104,7 +104,7 @@ def store_to_db(parent_img, forams, species, toStore, ext):
             raise
     for foram in forams:    # stores segmented images
         filename = uuid.uuid4().hex
-        img_location = os.path.join(toStore, 'train', species, filename) + ext
+        img_location = os.path.join(toStore, species, filename) + ext
         cv.imwrite(img_location, foram)
         new_image = Img(imgLocation=img_location,
                         species=species_obj,
