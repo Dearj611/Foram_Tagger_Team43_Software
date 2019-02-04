@@ -6,13 +6,12 @@ import math
 import os
 import statistics
 import regex as re
-from matplotlib import pyplot as plt
+#from matplotlib import pyplot as plt
 from django.conf import settings
 from upload.models import Img
 
 rng.seed(12345)
 
-cc
 def pre_processing(img):
     gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
     blurred = cv.GaussianBlur(gray, (5, 5), 0)
@@ -126,8 +125,8 @@ def visualize_all(img, boxes):
           (int(boxes[i][0]+boxes[i][2]), int(boxes[i][1]+boxes[i][3])), color, 3)
         cv.putText(img, str(i), (int(boxes[i][0]), int(boxes[i][1])),
                    cv.FONT_HERSHEY_SIMPLEX, 1,(255,255,255),2,cv.LINE_AA)
-    plt.imshow(img)
-    plt.show()
+    #plt.imshow(img)
+    #plt.show()
     print('visualize_all running')
 
 
@@ -135,8 +134,8 @@ def visualize_one(img, box):
     color = (rng.randint(0,256), rng.randint(0,256), rng.randint(0,256))
     cv.rectangle(img, (int(box[0]), int(box[1])),
           (int(box[0]+box[2]), int(box[1]+box[3])), color, 3)
-    plt.imshow(img)
-    plt.show()
+    #plt.imshow(img)
+    #plt.show()
 
 
 def get_forams(img, box):
@@ -216,7 +215,7 @@ def store_to_db(parent_img, forams, species, toStore, ext):
     ext: the file extension
 '''
     number_of_files = len([name for name in os.listdir('.') if os.path.isfile(name)])
-    parent_location = os.path.join(toStore, str(number_of_files) + ext
+    parent_location = os.path.join(toStore, str(number_of_files)) + ext
     cv.imwrite(parent_location, parent_img)
     parent_image = ImgParent(imgLocation=parent_location)
     parent_image.save()
@@ -244,6 +243,9 @@ def get_and_store(imgDir, toStore):
             continue
         for files in filename:  # filename is a list of files
             parent_img = cv.imread(os.path.join(dirpath, files))
+            print(type(parent_img))
+            print(parent_img.shape)
+            print(cv.__version__)
             forams = get_all_forams(parent_img)
             store_to_db(parent_img, forams, get_species_name(files), toStore,
                         os.path.splitext(files))
