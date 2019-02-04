@@ -249,7 +249,7 @@ def store_to_db(parent_img, forams, species, toStore, ext):
             raise
     for foram in forams:    # stores segmented images
         filename = uuid.uuid4().hex
-        img_location = os.path.join(toStore, 'train', species, filename) + ext
+        img_location = os.path.join(toStore, species, filename) + ext
         cv.imwrite(img_location, foram)
         new_image = Img(imgLocation=img_location,
                         species=species_obj,
@@ -283,6 +283,7 @@ def get_and_store(imgDir, toStore):
 def filter_table():
     '''
     Removes images that are too small and outliers from the database
+    for each species
     '''
     all_species = Img.objects.values_list('species', flat=True).distinct()
     for species in all_species:
