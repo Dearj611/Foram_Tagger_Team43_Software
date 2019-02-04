@@ -1,22 +1,19 @@
 from django.shortcuts import render
 from upload.models import Img
-<<<<<<< HEAD
 from upload.forms import ImageUploadForm
 from django.http import JsonResponse
 from django.views import View
-=======
 from .forms import ImageUploadForm
 from common import segmentation as seg
 import os
 from pathlib import Path
 
->>>>>>> master
 
 class BasicUploadView(View):
     def get(self, request):
-        photos_list = Img.objects.all()
-        forams = seg.get_all_forams(request.FILES.get('img'))
-
+        #photos_list = Img.objects.all()
+        #forams = seg.get_all_forams(request.FILES.get('img'))
+        photos_list = Img.objects.filter(parentImage=photo.imgLocation.name)
         return render(self.request, 'upload/imgupload.html', {'photos': photos_list})
 
     def post(self, request):
@@ -28,8 +25,6 @@ class BasicUploadView(View):
         else:
             data = {'is_valid': False}
         return JsonResponse(data)
-
-
 
 
 def showImg(request):

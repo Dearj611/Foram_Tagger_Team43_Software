@@ -12,7 +12,7 @@ from upload.models import Img
 
 rng.seed(12345)
 
-
+cc
 def pre_processing(img):
     gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
     blurred = cv.GaussianBlur(gray, (5, 5), 0)
@@ -231,7 +231,7 @@ def store_to_db(parent_img, forams, species, toStore, ext):
         number_of_files += 1
 
 #The original file I used was G.ruber-um-1.tif
-#toStore = 
+#toStore =
 def get_and_store(imgDir, toStore):
     '''
     The function populates the database and a directory
@@ -253,7 +253,7 @@ def get_and_store(imgDir, toStore):
             counter += 1
 
 
-    
+
 
 # populate('../../img/1_33e7cd', '../../segmented')
 # all_boxes = []
@@ -264,7 +264,7 @@ def get_and_store(imgDir, toStore):
 #         continue
 #     for files in filename:
 #         img = cv.imread(os.path.join(dirpath, files))
-#         boxes = filter_boxes(get_boxes(img, 100))            
+#         boxes = filter_boxes(get_boxes(img, 100))
         # all_boxes = all_boxes + get_boxes(img, 100)
     # counter += 1
     # if counter == 3:
