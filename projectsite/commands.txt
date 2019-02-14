@@ -37,3 +37,4 @@ num = [(str(species), len(Img.objects.all().filter(species=species))) for specie
 git stash
 git stash pop
 git stash list
+num = [(str(species), len(Img.objects.all().filter(species=species))) for species in all_species]

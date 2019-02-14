@@ -37,11 +37,18 @@ coverage.xml
 
 node_modules/
 <<<<<<< HEAD
+<<<<<<< HEAD
 migrations/
 =======
+=======
+>>>>>>> 5618a9dbf752e5b3e255cab4602245047cbe25ca
 ./projectsite/commands.txt
 migrations/
 .gitattributes
 mnist/
+<<<<<<< HEAD
 learn-pytorch/
 >>>>>>> master
+=======
+learn-pytorch/
+>>>>>>> 5618a9dbf752e5b3e255cab4602245047cbe25ca
