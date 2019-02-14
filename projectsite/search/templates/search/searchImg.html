@@ -32,12 +32,34 @@
             </div>
           </form>
 
+<!--
           {% if forams %}
           {% for each_foram in forams %}
-            <img src="{{each_foram.imageLocation.url}}" alt="No Image"></a>
-            <p>{{each_book.species}}</p>
+            <img src="{{each_foram.url}}" alt="No Image">
+            <p>{{each_foram.imageLocation.url}}</p>
+            <p>{{each_foram.species}}</p>
       {% endfor %}
       {% endif %}
+-->
+
+      {% if forams %}
+      <table id="gallery" class="table table-bordered">
+     <thead>
+       <tr>
+         <th>Images of {{species}}</th>
+       </tr>
+     </thead>
+     <tbody>
+       {% for each_foram in forams %}
+         <tr>
+           <td><img src="{{each_foram.url}}" alt="No Image"><br/>
+         </tr>
+       {% endfor %}
+     </tbody>
+   </table>
+   {% endif %}
+
+
 
       </div>
     </div> <!-- /container -->

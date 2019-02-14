@@ -1,18 +1,16 @@
 from __future__ import print_function
 import cv2 as cv
 import numpy as np
-import argparse
 import random as rng
 import math
 import os
 import statistics
 import regex as re
-from matplotlib import pyplot as plt
-import django
+#from matplotlib import pyplot as plt
+from django.conf import settings
 from upload.models import Img
 
 rng.seed(12345)
-
 
 def pre_processing(img):
     gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
@@ -127,25 +125,17 @@ def visualize_all(img, boxes):
           (int(boxes[i][0]+boxes[i][2]), int(boxes[i][1]+boxes[i][3])), color, 3)
         cv.putText(img, str(i), (int(boxes[i][0]), int(boxes[i][1])),
                    cv.FONT_HERSHEY_SIMPLEX, 1,(255,255,255),2,cv.LINE_AA)
-    plt.imshow(img)
-    plt.show()
+    #plt.imshow(img)
+    #plt.show()
+    print('visualize_all running')
 
 
 def visualize_one(img, box):
     color = (rng.randint(0,256), rng.randint(0,256), rng.randint(0,256))
     cv.rectangle(img, (int(box[0]), int(box[1])),
           (int(box[0]+box[2]), int(box[1]+box[3])), color, 3)
-    plt.imshow(img)
-    plt.show()
-
-
-def get_all_forams(img, boxes):
-    '''
-    Applying the bounding boxes to the original image
-    to create a new list of images
-    '''
-    forams = [img[box[1]:box[1]+box[3], box[0]:box[0]+box[2]] for box in boxes]
-    return forams
+    #plt.imshow(img)
+    #plt.show()
 
 
 def get_forams(img, box):
@@ -206,40 +196,68 @@ def get_species_name(string):
         name = name[:i+1] + ' ' + name[i+1:]
     return name
 
-#The original file I used was G.ruber-um-1.tif
 
-#populate('../../img', '../../segmented/')
-def populate(imgDir, toStore):
+def get_all_forams(img):
+    '''
+    Applying the bounding boxes to the original image
+    to create a new list of images
+    '''
+    boxes = filter_boxes(get_boxes(img, 100))
+    forams = [img[box[1]:box[1]+box[3], box[0]:box[0]+box[2]] for box in boxes]
+    return forams
+
+
+def store_to_db(parent_img, forams, species, toStore, ext):
+    '''
+    parent_img: the original image
+    forams: numpy array
+    toStore: directory to store in
+    ext: the file extension
+'''
+    number_of_files = len([name for name in os.listdir('.') if os.path.isfile(name)])
+    parent_location = os.path.join(toStore, str(number_of_files)) + ext
+    cv.imwrite(parent_location, parent_img)
+    parent_image = ImgParent(imgLocation=parent_location)
+    parent_image.save()
+    number_of_files += 1
+    for foram in forams:    #stores segmented images
+        img_location = os.path.join(toStore, str(number_of_files)) + ext
+        cv.imwrite(img_location, foram)
+        new_image = Img(imgLocation=img_location,
+                        species=species,
+                        parentImage=parent_image)
+        new_image.save()
+        number_of_files += 1
+
+#The original file I used was G.ruber-um-1.tif
+#toStore =
+def get_and_store(imgDir, toStore):
     '''
     The function populates the database and a directory
+    imgDir: the source of all the parent images
+    toStore: the directory where you want to store the images
     '''
     counter = 0
-    for dirpath, directory, filename in os.walk(imgDir, toStore):
+    for dirpath, directory, filename in os.walk(imgDir):
         if len(filename) == 0:
             continue
-        for files in filename:
-            species_name = get_species_name(files)
-            img = cv.imread(os.path.join(dirpath, files))
-            boxes = filter_boxes(get_boxes(img, 100))
-            number_of_files = len(next(os.walk(toStore))[2])
-            print(number_of_files)
-            for box in boxes:
-                img_location = toStore + str(number_of_files)
-                cv.imwrite(img_location+'.tif', get_forams(img, box))
-                new_image = Img(imgLocation=img_location, species=species_name,
-                                parentImage=os.path.join(dirpath, files))
-                new_image.save()
-                number_of_files += 1
-            parent_image = Img(imgLocation=toStore + str(number_of_files))
-            parent_image.save()
-            number_of_files += 1
+        for files in filename:  # filename is a list of files
+            parent_img = cv.imread(os.path.join(dirpath, files))
+            print(type(parent_img))
+            print(parent_img.shape)
+            print(cv.__version__)
+            forams = get_all_forams(parent_img)
+            store_to_db(parent_img, forams, get_species_name(files), toStore,
+                        os.path.splitext(files))
+        if counter == 2:
+            break
+        else:
             counter += 1
-            if counter == 3:    # This counters are for testing purposes
-                break
-        if counter == 3:
-                break
 
 
+
+
+# populate('../../img/1_33e7cd', '../../segmented')
 # all_boxes = []
 # counter = 0
 # path = '../img'
@@ -248,7 +266,7 @@ def populate(imgDir, toStore):
 #         continue
 #     for files in filename:
 #         img = cv.imread(os.path.join(dirpath, files))
-#         boxes = filter_boxes(get_boxes(img, 100))            
+#         boxes = filter_boxes(get_boxes(img, 100))
         # all_boxes = all_boxes + get_boxes(img, 100)
     # counter += 1
     # if counter == 3:

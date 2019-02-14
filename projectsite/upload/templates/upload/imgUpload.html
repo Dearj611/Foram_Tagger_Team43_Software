@@ -32,10 +32,19 @@
           </form>
           </div>-->
 
+          <form method="post" action="{% url 'clear_database' %}">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ request.path }}">
+            <button type="submit" class="btn btn-danger pull-right">
+              <span class="glyphicon glyphicon-trash"></span> Clear Database
+            </button>
+          </form>
+
+          <div style = "text-align:center">
           <button type="button" class="btn btn-primary js-upload-photos">
             <span class="glyphicon glyphicon-cloud-upload"></span> Upload photos
           </button>
-
+            </div>
           <!-- Drop Zone -->
           <div class="upload_sec">
             <div class="upload-drop-zone">
@@ -51,13 +60,14 @@
           <table id="gallery" class="table table-bordered">
          <thead>
            <tr>
-             <th>Photo</th>
+             <th>Recognised forams</th>
            </tr>
          </thead>
          <tbody>
            {% for photo in photos %}
              <tr>
-               <td><a href="{{ photo.imgLocation.url }}">{{ photo.imgLocation.name }}</a></td>
+              <!-- <td><img src="{{ photo.imgLocation.url }}"><br/>
+               <p>{{ photo.imgLocation.name }}</p></td> -->
              </tr>
            {% endfor %}
          </tbody>
