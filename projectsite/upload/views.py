@@ -28,7 +28,7 @@ class BasicUploadView(View):
                 #img_location = []
                 #for foram in show_forams:
                 #    img_location.append(foram.imgLocation)
-                data = {'is_valid': True, 'name': photo.imgLocation.name, 'url': photo.imgLocation.url}
+                data = {'is_valid': True, 'name': photo.imgLocation.name, 'url': photo.imgLocation.url, 'species':photo.species}
                 #data = {'is_valid': True, 'content':img_location}
                 return JsonResponse(data)
             else:
