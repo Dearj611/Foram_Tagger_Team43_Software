@@ -4,6 +4,7 @@
 {% block title %}Upload Photo {% endblock %}
 {% block header %}
 <link href="//netdna.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+
 {% endblock %}
 
 {% block content %}
@@ -45,14 +46,37 @@
 
 
           <!-- Upload Finished -->
+          <div class="processed">
             <h3>Processed files</h3>
-            <div class="display" id="display">
+            <button type="submit" class="btn btn-primary pull-right" id="edit_button">
+              <span class="glyphicon glyphicon-edit"></span> Edit tags</button>
+          </div>
 
-
+            <div class="display">
+              {% for photo in photos %}
+              <div class="display_items">
+              <img src="{{ photo.imgLocation.url }}"><br/>
+                  <p>{{ photo.species }}</p>
+                  <div class="edit" style="display: none;">
+                  <form method="post" action="{% url 'uploadImage' %}">
+                    {% csrf_token %}
+                    <input type="text" name="uploaded_img_id" value="{{photo.pk}}" hidden>
+                    <input type="text" name="species" value="{{photo.species}}">
+                    <input type="submit" value="submit">
+                   </form>
+                   </div>
+                   </div>
+              {% endfor %}
         </div>
+
+
     </div> <!-- /container -->
+</div>
+</div>
+
 
 </section>
+
 
 {% endblock %}
 
@@ -83,22 +107,46 @@
 
 
 
+<!-- Modal -->
+<!--
+<div class="container">
+  <div class="modal fade" id="myModal" role="dialog">
+    <div class="modal-dialog">
 
-<!--      <table id="gallery" class="table table-bordered">
- <thead>
-   <tr>
-     <th>Recognised forams</th>
-   </tr>
- </thead>
- <tbody>
-   {% for photo in photos %}
-     <tr>
-   <td><img src="{{ photo.imgLocation.url }}"><br/>
-       <p>{{ photo.imgLocation.name }}</p></td>
-     </tr>
-   {% endfor %}
- </tbody>
-</table>
+      <!-- Modal content
+      <div class="modal-content">
+        <div class="modal-header" style="padding:35px 50px;">
+          <h4>Modify the tags</h4>
+        </div>
+        <div class="modal-body" style="padding:40px 50px;">
+          <form role="form" method="post">
+            {% csrf_token %}
+            <div class="form-group">
+              <label for="number"> Image name</label>
+              <input type="text" class="form-control" id="number" placeholder="Enter number">
+              <select>
+
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="newtag">Correct tags</label>
+              <input type="text" class="form-control" id="newtag" placeholder="Enter the correct tag, leave empty if not sure">
+            </div>
+              <button type="submit" class="btn btn-success btn-block"><span class="glyphicon glyphicon-off"></span> Submit</button>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-danger btn-default pull-left" data-dismiss="modal"><span class="glyphicon glyphicon-remove"></span> Cancel</button>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+
 
 <div class="display" id="display">
 {% for photo in photos %}
