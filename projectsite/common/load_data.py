@@ -42,7 +42,6 @@ class ForamDataSet(Dataset):
 
     def set_labels(self):
         labels = list(np.unique(self.master_csv_file['species'].values))
-        print(len(labels))
         assert(len(labels) == 17)   # 17 classes for now
         return labels
         
