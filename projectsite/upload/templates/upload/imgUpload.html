@@ -56,13 +56,13 @@
               {% for photo in photos %}
               <div class="display_items">
               <img src="{{ photo.imgLocation.url }}"><br/>
-                  <p>{{ photo.species }}</p>
+                  <p>{{ photo.species_id }}</p>
                   <div class="edit" style="display: none;">
                   <form method="post" action="{% url 'uploadImage' %}">
                     {% csrf_token %}
                     <input type="text" name="uploaded_img_id" value="{{photo.pk}}" hidden>
-                    <input type="text" name="species" value="{{photo.species}}">
-                    <input type="submit" value="submit">
+                    <input type="text" name="species" value="{{photo.species_id}}">
+                    <input type="submit" value="submit" id="edit_submit">
                    </form>
                    </div>
                    </div>

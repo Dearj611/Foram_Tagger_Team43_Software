@@ -17,7 +17,6 @@ class Species(models.Model):
     name = models.CharField(max_length=30, primary_key=True)
     total = models.PositiveIntegerField(null=True)
 
-
 class Img(models.Model):
     imgLocation = models.ImageField(upload_to='', default='None')
     species = models.ForeignKey(Species, on_delete=models.CASCADE, null=True)
@@ -27,10 +26,6 @@ class Img(models.Model):
 
 
 '''
-Normally what would happen is that the image would be saved in
-MEDIA_ROOT/segment/, But I believe I am overwritting this behaviour
-whenever i use imagefield
-
 on_delete=CASCADE means that if I delete a species, then all the records
 in the Img table referencing that species is deleted
 i.e. you delete species = 'G. hazta', then all the records that reference
@@ -43,9 +38,7 @@ those entries to be deleted
 If someone were to delete the gender "Female" from my Gender table, 
 I CERTAINLY would NOT want that to instantly delete any and all people
  I had in my Person table who had that gender.
-'''
 
-'''
 [('G. scitula', 123),
  ('G. truncatulinoides', 146),
  ('G. ruber pink', 12),
@@ -64,5 +57,11 @@ I CERTAINLY would NOT want that to instantly delete any and all people
  ('O. universa', 28),
  ('N. dutertrei', 50)]
 
- 17 species (for now)
+17 species (for now)
+say your foreign key referenced a look-up table.
+if entries in that look-up table were deleted, this would records using
+those entries to be deleted
+If someone were to delete the gender "Female" from my Gender table,
+I CERTAINLY would NOT want that to instantly delete any and all people
+I had in my Person table who had that gender.
 '''

@@ -5,9 +5,14 @@ $(function () {
   });
 
   $("#fileupload").fileupload({
-    dataType: 'html',
+    dataType: 'json',
     done: function (e, data) {
-      location.reload();
+      if (data.result.is_valid) {
+        console.log(data.result)
+        new_location=window.location.href + '?imgLocation=' + data.result.url;
+        console.log(new_location)
+        window.location.replace(new_location);
+      }
     }
   });
 

@@ -8,7 +8,7 @@ class ImageUploadForm(forms.ModelForm):
 
 class ImageUploadForm(forms.ModelForm):
     uploaded_img_id = forms.IntegerField(required=False)
-
+    species_name = forms.CharField(required=False)
     class Meta:
         model = Img
-        fields = ('imgLocation', 'species', 'uploaded_img_id')
+        fields = ('imgLocation', 'species_name', 'uploaded_img_id')

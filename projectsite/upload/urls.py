@@ -7,4 +7,5 @@ urlpatterns = [
     path('clear/', clear_database, name='clear_database'),
     path('', BasicUploadView.as_view(), name='uploadImage'),
     path('show/', showImg, name='displayImage'),
+    #path('<path:imgLocation>/', real_time_display),
 ]
