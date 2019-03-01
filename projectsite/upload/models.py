@@ -19,7 +19,7 @@ class Species(models.Model):
 
 
 class Img(models.Model):
-    imgLocation = models.ImageField(upload_to='segment', default='None')
+    imgLocation = models.ImageField(upload_to='', default='None')
     species = models.ForeignKey(Species, on_delete=models.CASCADE, null=True)
     parentImage = models.ForeignKey(ImgParent, on_delete=models.CASCADE, null=True)
 

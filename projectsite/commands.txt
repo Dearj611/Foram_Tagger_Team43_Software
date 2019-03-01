@@ -6,12 +6,16 @@ Img.objects.all().values_list('species', flat=True)
 Img.objects.filter(species='G. truncatulinoides')
 
 ./manage.py showmigrations
+
 ./manage.py migrate my_app zero
+
+lets you enter the mysql database
 ./manage.py dbshell
+
 Essentially nukes your database. worst case scenario
 ./manage.py reset_db
-python manage.py flush
 
+python manage.py flush
 ./manage.py test
 ./manage.py migrate my_app 0010_previous_migration
 Unittest
@@ -34,7 +38,5 @@ There are currently 17 species
 
 num = [(str(species), len(Img.objects.all().filter(species=species))) for species in all_species]
 
-git stash
-git stash pop
-git stash list
-num = [(str(species), len(Img.objects.all().filter(species=species))) for species in all_species]
+scp vgg16-transfer-4.pt vgg16-transfer-4.pth camelcars@81.110.229.51:~/
+scp model2.py zongchua@knuckles.cs.ucl.ac.uk:~/Documents/ucl2/Foram_Tagger_Team43_Software/projectsite/common

@@ -41,6 +41,11 @@
       {% endfor %}
       {% endif %}
 -->
+{% if message %}
+<div class="message">
+  <p>{{message}}</p>
+  </div>
+{% endif %}
 
       {% if forams %}
       <table id="gallery" class="table table-bordered">

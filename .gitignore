@@ -36,8 +36,10 @@ coverage.xml
 .ipynb_checkpoints
 
 node_modules/
+migrations/
 ./projectsite/commands.txt
 migrations/
 .gitattributes
 mnist/
 learn-pytorch/
+projectsite/projectsite/settings.py

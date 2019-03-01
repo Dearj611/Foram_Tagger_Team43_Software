@@ -5,14 +5,18 @@ $(function () {
   });
 
   $("#fileupload").fileupload({
-    dataType: 'json',
+    dataType: 'html',
     done: function (e, data) {
-      if (data.result.is_valid) {
-        $("#gallery tbody").prepend(
-          "<tr><td><a href='" + data.result.url + "'>" + data.result.name + "</a></td></tr>"
-        )
-      }
+      location.reload();
     }
+  });
+
+  $('#edit_button').click(function() {
+      $('.edit').toggle("slide");
+    });
+
+  $("#myBtn").click(function(){
+    $("#myModal").modal();
   });
 
 });

@@ -125,7 +125,7 @@ USE_L10N = True
 USE_TZ = True
 
 #MEDIA_ROOT this is the absolute path to the folder that will hold our user uploads. 
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media').replace('\\', '/') # media即为图片上传的根路径
+MEDIA_ROOT = os.path.join(BASE_DIR, '').replace('\\', '/') # media即为图片上传的根路径
 MEDIA_URL = '/media/'
 #MEDIA_URL this is the relative browser URL to be used when accessing our media files in the browser.
 
