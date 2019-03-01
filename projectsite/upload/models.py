@@ -1,13 +1,52 @@
 from django.db import models
 
-class Img(models.Model):
-    imgLocation = models.ImageField(upload_to='segment', default='None')
-    species = models.CharField(max_length=30, blank=True, default='None')
-    parentImage = models.CharField(max_length=100, default='None')
-
 class ImgParent(models.Model):
+    '''
+    I created this model so that I could use it for testing the accuracy
+    of my image segmentation algorithm
+    i.e. record how many forams are actually in this image
+    '''
     imgLocation = models.ImageField(upload_to='parent', default='None')
 
+
 class Species(models.Model):
-    name = models.CharField(max_length=30, default='None')
-    total = models.PositiveIntegerField(null = True)
+    '''
+    Will include some stats here later, easier to add columns than to
+    remove them
+    '''
+    name = models.CharField(max_length=30, primary_key=True)
+    total = models.PositiveIntegerField(null=True)
+
+class Img(models.Model):
+    imgLocation = models.ImageField(upload_to='segment', default='None')
+    species = models.ForeignKey(Species, on_delete=models.CASCADE, null=True)
+    parentImage = models.ForeignKey(ImgParent, on_delete=models.CASCADE, null=True)
+
+
+
+
+'''
+Normally what would happen is that the image would be saved in
+MEDIA_ROOT/segment/, But I believe I am overwritting this behaviour
+whenever i use imagefield
+
+on_delete=CASCADE means that if I delete a species, then all the records
+in the Img table referencing that species is deleted
+i.e. you delete species = 'G. hazta', then all the records that reference
+that G. hazta is deleted
+
+on_delete=PROTECT
+say your foreign key referenced a look-up table.
+if entries in that look-up table were deleted, this would records using
+those entries to be deleted
+If someone were to delete the gender "Female" from my Gender table,
+I CERTAINLY would NOT want that to instantly delete any and all people
+ I had in my Person table who had that gender.
+
+
+ class Img(models.Model):
+     imgLocation = models.ImageField(upload_to='segment', default='None')
+     species = models.CharField(max_length=30, blank=True, default='None')
+     parentImage = models.CharField(max_length=100, default='None')
+
+'''
