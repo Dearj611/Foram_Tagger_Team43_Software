@@ -12,7 +12,7 @@ from urllib.parse import urlparse, parse_qs
 
 class BasicUploadView(View):
     def get(self, request, imgLocation=None):
-        url = self.request.get_full_path()
+        #url = self.request.get_full_path()
         #print(urlparse(url).query)
         #print(parse_qs(urlparse(url).query))
         imgLocation = request.GET.get('imgLocation', False)
@@ -34,8 +34,8 @@ class BasicUploadView(View):
             corrected_species.save()
             Img.objects.filter(pk=request.POST['uploaded_img_id']).update(species=corrected_species)
             url = Img.objects.get(pk=request.POST['uploaded_img_id'])
-            str = '?imgLocation=' + url.imgLocation.name
-            return redirect(str)
+            address = '?imgLocation=' + url.imgLocation.name
+            return redirect(address)
             #return redirect('uploadImage')
             #form = ImageUploadForm(self.request.POST, instance=instance)
         else:
