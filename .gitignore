@@ -49,3 +49,4 @@ learn-pytorch/
 # PyTorch
 *.pt
 *.pth
+training-images/

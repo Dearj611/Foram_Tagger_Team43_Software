@@ -43,6 +43,9 @@ class ImgModelTest(TestCase):
 
 
 class SpeciesTest(TestCase):
+    '''
+    Ensures that the species table is functioning correctly
+    '''
     @classmethod
     def setUpTestData(cls):
         img = np.zeros((3,3,3), np.uint8)
