@@ -7,6 +7,9 @@ import os
 import common.image_segmentation
 
 class ImgModelTest(TestCase):
+    '''
+    This test ensures that images are being saved correctly in the database
+    '''
     @classmethod
     def setUpTestData(cls):
         img = np.zeros((3,3,3), np.uint8)

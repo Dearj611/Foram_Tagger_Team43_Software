@@ -70,11 +70,3 @@ if __name__ == "__main__":
     print(sample.numpy().shape)
     trans = transforms.ToPILImage()
     sample = trans(sample)
-
-# def CrossEntropy(yHat, y):
-#     if y == 1:
-#       return -log(yHat)
-#     else:
-#       return -log(1 - yHat)
-
-

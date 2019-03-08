@@ -12,8 +12,8 @@ from pathlib import Path
 
 class BasicUploadView(View):
     def get(self, request):
-        photos_list = Img.objects.all()
-        #photos_list = Img.objects.filter(parentImage=photo.imgLocation.name)
+        photos_list = Img.objects.all()[:5]
+        # photos_list = Img.objects.filter(parentImage=photo.imgLocation.name)
         return render(self.request, 'upload/imgUpload.html', {'photos': photos_list})
 
     def post(self, request):

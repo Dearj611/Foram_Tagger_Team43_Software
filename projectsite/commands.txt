@@ -40,3 +40,11 @@ num = [(str(species), len(Img.objects.all().filter(species=species))) for specie
 
 scp vgg16-transfer-4.pt vgg16-transfer-4.pth camelcars@81.110.229.51:~/
 scp model2.py zongchua@knuckles.cs.ucl.ac.uk:~/Documents/ucl2/Foram_Tagger_Team43_Software/projectsite/common
+
+This must be ran everytime you start a new terminal session, unless you save this in the bashrc file
+export DJANGO_SETTINGS_MODULE=projectsite.production_settings
+
+To do next:
+Write an integration test to show that all databases are functioning correctly
+Why do I keep getting connection error even though I've set an unlimited persistent connection
+Change segmentation.py to the new version

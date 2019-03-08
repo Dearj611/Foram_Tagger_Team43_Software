@@ -3,13 +3,15 @@ import cv2 as cv
 import numpy as np
 import random as rng
 import math
-import os, errno
+import os, sys, errno
 import statistics
 import regex as re
 from matplotlib import pyplot as plt
 from django.conf import settings
 from upload.models import Img, ImgParent, Species
 import uuid
+import tempfile
+from azure.storage.blob import BlockBlobService, PublicAccess
 from django.db.models import F
 
 rng.seed(12345)
@@ -67,20 +69,6 @@ def remove_outliers(arr):
             break
     return arr
 
-
-def remove_outliers_2(arr):
-    '''
-    This uses the more common IQR method
-    The other remove_outliers method removes way too much correct data
-    '''
-    arr = [i for i in arr if i > 1000]
-    q1 = np.percentile(arr, 25)
-    q3 = np.percentile(arr, 75)
-    iqr = q3-q1
-    min_outlier = q1 - (1.5*iqr)
-    max_outlier = q3 + (1.5*iqr)
-    arr = [i for i in arr if i < max_outlier and i > min_outlier]
-    return arr
 
 def get_outliers(arr):
     q1 = np.percentile(arr, 25)
@@ -148,34 +136,6 @@ def visualize_one(img, box):
     plt.show()
 
 
-def get_forams(img, box):
-    return img[box[1]:box[1]+box[3], box[0]:box[0]+box[2]]
-
-
-def normalize(forams, boxes):
-    '''
-    Makes the forams equal size
-    '''
-    max_width = max(boxes, key=lambda x:x[2])[2]
-    max_height = max(boxes, key=lambda x:x[3])[3]
-    for i in range(len(boxes)):
-        to_add_width = max_width-boxes[i][2]
-        to_add_height = max_height-boxes[i][3]
-        cv.copyMakeBorder(forams[i], math.ceil(to_add_height/2), math.floor(to_add_height/2),
-            math.ceil(to_add_width/2), math.ceil(to_add_width/2), cv.BORDER_CONSTANT)
-
-
-def freedman_diaconis(arr):
-    '''
-    used to calculate the number of bins for a histogram
-    wiki this equation
-    '''
-    iqr = np.percentile(arr, 75)-np.percentile(arr, 25)
-    bin_width = (2*iqr)/(len(arr)**(1/3))
-    print(int(bin_width))
-    return int(bin_width)
-
-
 def some_stats(arr):
     print('data points', len(arr))
     print('mean', sum(arr)/len(arr))
@@ -198,12 +158,13 @@ def get_species_name(string):
             pass
         else:
             name.append(i)
-    name = ' '.join(name)
-    if ' ' not in name:
+    name = '-'.join(name)
+    if '-' not in name:
         i = 0
         while name[i] != '.':
             i += 1
-        name = name[:i+1] + ' ' + name[i+1:]
+        name = name[:i+1] + '-' + name[i+1:]
+    name = ''.join(name.split('.')).lower()
     return name
 
 
@@ -219,14 +180,14 @@ def get_all_forams(img):
 
 def store_to_db(parent_img, forams, species, toStore, ext):
     '''
-    parent_img: the original image
+    parent_img: image in matrix form
     forams: numpy array
     toStore: directory to store in
     ext: the file extension
     The first part stores the parent image in the parent dir
     the For loop stores the segmented images
     '''
-    try:
+    try:    # check if species already exist
         species_obj = Species.objects.get(name=species)
     except Species.DoesNotExist:
         species_obj = Species(name=species, total=0)
@@ -238,7 +199,7 @@ def store_to_db(parent_img, forams, species, toStore, ext):
     except OSError as e:
         if e.errno != errno.EEXIST:
             raise
-    parent_location = os.path.join(parent_dir, uuid.uuid4().hex) + ext
+    parent_location = os.path.join(parent_dir, uuid.uuid4().hex) + '.jpg'
     cv.imwrite(parent_location, parent_img)
     parent_image = ImgParent(imgLocation=parent_location)
     parent_image.save()
@@ -249,7 +210,7 @@ def store_to_db(parent_img, forams, species, toStore, ext):
             raise
     for foram in forams:    # stores segmented images
         filename = uuid.uuid4().hex
-        img_location = os.path.join(toStore, species, filename) + ext
+        img_location = os.path.join(toStore, species, filename) + '.jpg'
         cv.imwrite(img_location, foram)
         new_image = Img(imgLocation=img_location,
                         species=species_obj,
@@ -259,7 +220,47 @@ def store_to_db(parent_img, forams, species, toStore, ext):
     species_obj.total = F('total') + species_counter
     species_obj.save()
 
-    
+
+def store_to_remote_db(parent_img, forams, species, block_blob_service):
+    '''
+    parent_img: numpy array
+    forams: numpy array
+    species: str
+    The first part stores the parent image in the parent container
+    the For loop stores the segmented images
+    '''
+    try:
+        species_obj = Species.objects.get(name=species)
+    except Species.DoesNotExist:
+        species_obj = Species(name=species, total=0)
+        species_obj.save()
+    species_counter = 0
+    with tempfile.TemporaryDirectory() as dirpath:
+        filename = uuid.uuid4().hex + '.jpg'
+        filepath = os.path.join(dirpath, filename)
+        cv.imwrite(filepath, parent_img)
+        block_blob_service.create_container('parent')
+        block_blob_service.set_container_acl('parent', public_access=PublicAccess.Container)
+        block_blob_service.create_blob_from_path('parent', filename, filepath)
+        parent_image = ImgParent(imgLocation=os.path.join('parent', filename))
+        parent_image.save()
+        for foram in forams:    # stores segmented images
+            filename = uuid.uuid4().hex + '.jpg'
+            filepath = os.path.join(dirpath, filename)
+            cv.imwrite(filepath, foram)
+            print(species)
+            block_blob_service.create_container(species)
+            block_blob_service.set_container_acl(species, public_access=PublicAccess.Container)
+            block_blob_service.create_blob_from_path(species, filename, filepath)
+            new_image = Img(imgLocation=os.path.join(species, filename),
+                            species=species_obj,
+                            parentImage=parent_image)
+            species_counter += 1
+            new_image.save()
+        species_obj.total = F('total') + species_counter
+        species_obj.save()
+
+
 # The original file I used was G.ruber-um-1.tif
 # toStore = 
 # get_and_store('../../img', './media')
@@ -269,15 +270,15 @@ def get_and_store(imgDir, toStore):
     imgDir: the source of all the parent images
     toStore: the directory where you want to store the images
     '''
-    counter = 0
+    block_blob_service = BlockBlobService(account_name='forampics', account_key='4nwt5cexYaNCgmsk5NrLLm5lmRprYobFVepz+hhb6b7hv2f6zifM1EPmoqT7SMTsUYvWSe3nREd/dS6g8Thjmg==')
     for dirpath, directory, filename in os.walk(imgDir):
         if len(filename) == 0:
             continue
         for files in filename:  # filename is a list of files
             parent_img = cv.imread(os.path.join(dirpath, files))
             forams = get_all_forams(parent_img)
-            store_to_db(parent_img, forams, get_species_name(files), toStore,
-                        os.path.splitext(files)[1])
+            store_to_remote_db(parent_img, forams, get_species_name(files),
+                               block_blob_service)
 
 
 def filter_table():
@@ -298,4 +299,3 @@ def filter_table():
                 i.delete()
             elif dimensions < min_outlier or dimensions > max_outlier:
                 i.delete()
-

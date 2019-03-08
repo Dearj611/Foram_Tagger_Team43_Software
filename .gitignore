@@ -9,6 +9,7 @@ __pycache__/
 local_settings.py
 db.sqlite3
 media
+projectsite/projectsite/settings.py
 
 # Environments
 .env
@@ -42,4 +43,7 @@ migrations/
 .gitattributes
 mnist/
 learn-pytorch/
-projectsite/projectsite/settings.py
+
+# PyTorch
+*.pt
+*.pth

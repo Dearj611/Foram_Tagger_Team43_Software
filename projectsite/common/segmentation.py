@@ -61,7 +61,6 @@ def get_all_forams(uploaded_file):
     to create a new list of images
     Returns 
     '''
-    # uploaded_file = uploaded_file.read()
     with tempfile.TemporaryDirectory() as dirpath:
         with open(os.path.join(dirpath, uploaded_file.name), 'wb+') as destination:
             for chunk in uploaded_file.chunks():
@@ -93,7 +92,7 @@ def store_to_db(parent_img, forams, species, toStore, ext):
     except OSError as e:
         if e.errno != errno.EEXIST:
             raise
-    parent_location = os.path.join(parent_dir, uuid.uuid4().hex) + ext
+    parent_location = os.path.join(parent_dir, uuid.uuid4().hex) + '.jpg'
     cv.imwrite(parent_location, parent_img)
     parent_image = ImgParent(imgLocation=parent_location)
     parent_image.save()
@@ -104,7 +103,7 @@ def store_to_db(parent_img, forams, species, toStore, ext):
             raise
     for foram in forams:    # stores segmented images
         filename = uuid.uuid4().hex
-        img_location = os.path.join(toStore, species, filename) + ext
+        img_location = os.path.join(toStore, species, filename) + '.jpg'
         cv.imwrite(img_location, foram)
         new_image = Img(imgLocation=img_location,
                         species=species_obj,
