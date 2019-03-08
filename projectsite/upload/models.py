@@ -18,11 +18,13 @@ class Species(models.Model):
     total = models.PositiveIntegerField(null=True)
 
 class Img(models.Model):
+    '''
+    Main model for the functions.
+
+    '''
     imgLocation = models.ImageField(upload_to='segment', default='None')
     species = models.ForeignKey(Species, on_delete=models.CASCADE, null=True)
     parentImage = models.ForeignKey(ImgParent, on_delete=models.CASCADE, null=True)
-
-
 
 
 '''
