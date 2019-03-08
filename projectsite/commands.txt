@@ -1,5 +1,4 @@
 Notes for frequently used commands
-image_segmentation.populate('../../img', '../../segmented/')
 from upload.models import Img
 Img.objects.all().values_list('species', flat=True)
 'G. truncatulinoides'
@@ -31,6 +30,11 @@ removes file from git repository but not from filesystem
 git rm --cached file1.txt
 git commit -m "remove file1.txt"
 
+Moves the most recent commit back to the staging area
+git reset --soft HEAD^ 
+
+git reset --soft HEAD^ 
+
 from importlib import reload
 
 Img.objects.values_list('species', flat=True).distinct()
@@ -41,10 +45,15 @@ num = [(str(species), len(Img.objects.all().filter(species=species))) for specie
 scp vgg16-transfer-4.pt vgg16-transfer-4.pth camelcars@81.110.229.51:~/
 scp model2.py zongchua@knuckles.cs.ucl.ac.uk:~/Documents/ucl2/Foram_Tagger_Team43_Software/projectsite/common
 
-This must be ran everytime you start a new terminal session, unless you save this in the bashrc file
-export DJANGO_SETTINGS_MODULE=projectsite.production_settings
+Lists the files in a commit
+git diff-tree --no-commit-id --name-status -r 2995814
+git show --name-only 2995814
 
 To do next:
 Write an integration test to show that all databases are functioning correctly
 Why do I keep getting connection error even though I've set an unlimited persistent connection
 Change segmentation.py to the new version
+make sure data retrieval has been updated
+
+For you you really fuck up and need to remove a file from your git history
+git filter-branch --index-filter 'git rm -r --cached --ignore-unmatch <file/dir>' HEAD
