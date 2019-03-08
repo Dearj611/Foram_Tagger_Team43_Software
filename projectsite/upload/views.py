@@ -11,13 +11,16 @@ from pathlib import Path
 from urllib.parse import urlparse, parse_qs
 
 class BasicUploadView(View):
-    def get(self, request, imgLocation=None):
+    def get(self, request):
         #url = self.request.get_full_path()
         #print(urlparse(url).query)
         #print(parse_qs(urlparse(url).query))
-        imgLocation = request.GET.get('imgLocation', False)
-        if imgLocation != False:
-            photos_list = Img.objects.filter(imgLocation=imgLocation)
+        imgLocations = request.GET.getlist('imgLocation', None)
+        if imgLocations:
+            photos_list = []
+            for imgLocation in imgLocations:
+                photo = Img.objects.filter(imgLocation=imgLocation)[0]
+                photos_list.append(photo)
             return render(self.request, 'upload/imgUpload.html', {'photos': photos_list})
         else:
             #print("didn't receive anything!")
@@ -33,15 +36,22 @@ class BasicUploadView(View):
                 corrected_species = Species(name=request.POST['species'], total=1)
             corrected_species.save()
             Img.objects.filter(pk=request.POST['uploaded_img_id']).update(species=corrected_species)
-            url = Img.objects.get(pk=request.POST['uploaded_img_id'])
-            address = '?imgLocation=' + url.imgLocation.name
-            return redirect(address)
+            url = request.POST['original_url']
+            return redirect(url)
             #return redirect('uploadImage')
             #form = ImageUploadForm(self.request.POST, instance=instance)
         else:
-            form = ImageUploadForm(self.request.POST, self.request.FILES)
+            print(request.FILES)
+            print(request.POST)
+            photos = []
+            form = ImageUploadForm(request.POST, request.FILES)
             if form.is_valid():
-                photo = form.save()
+                for file in request.FILES.getlist('imgLocation'):
+                    print(file)
+                    img = Img(imgLocation = file)
+                    img.save()
+                    photos.append(img)
+                    print(photos)
             #print("myspecies:", form.species_name)
             #_, file_ext = os.path.splitext(photo.imgLocation.name)
             #img = Img(imgLocation=request.FILES.get('img'))
@@ -51,7 +61,7 @@ class BasicUploadView(View):
             #img_location = []
             #for foram in show_forams:
             #    img_location.append(foram.imgLocation)
-                data = {'is_valid': True, 'url': photo.imgLocation.name}
+                data = {'is_valid': True, 'urls': [photo.imgLocation.name for photo in photos]}
                 #return redirect('uploadImage')
             else:
                 print("erroraleart", form.errors)

@@ -23,8 +23,6 @@ class Img(models.Model):
     parentImage = models.ForeignKey(ImgParent, on_delete=models.CASCADE, null=True)
 
 
-
-
 '''
 on_delete=CASCADE means that if I delete a species, then all the records
 in the Img table referencing that species is deleted
@@ -57,6 +55,7 @@ I CERTAINLY would NOT want that to instantly delete any and all people
  ('O. universa', 28),
  ('N. dutertrei', 50)]
 
+<<<<<<< dbffff0bbb04289338ac3391b0cc748055c41a9f
 17 species (for now)
 say your foreign key referenced a look-up table.
 if entries in that look-up table were deleted, this would records using
@@ -64,4 +63,11 @@ those entries to be deleted
 If someone were to delete the gender "Female" from my Gender table,
 I CERTAINLY would NOT want that to instantly delete any and all people
 I had in my Person table who had that gender.
+=======
+ class Img(models.Model):
+     imgLocation = models.ImageField(upload_to='segment', default='None')
+     species = models.CharField(max_length=30, blank=True, default='None')
+     parentImage = models.CharField(max_length=100, default='None')
+
+>>>>>>> finish and fix all the functionalities based on the final model and db
 '''
