@@ -21,12 +21,12 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/2.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'az7u5-i_ot%*#l9dhyx%cnk0$b&8h0icne@pm4qd1)s*9s-%1z'
+SECRET_KEY = os.environ['SECRET_KEY']
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
 # Tells your WSGI application what settings file to use
 os.environ['DJANGO_SETTINGS_MODULE'] = 'projectsite.production_settings'
@@ -88,9 +88,9 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',   # 加载驱动
         'CONN_MAX_AGE': None,
         'NAME': 'django', # 数据库名
-        'USER': 'camelcars@foramdatabase', # mysql的用户名
-        'PASSWORD': 'ForamTagger123', # mysql的密码
-        'HOST': 'foramdatabase.mysql.database.azure.com', # 连接地址（本地的话使用localhost或者127.0.0.1）
+        'USER': os.environ['DB_USER'], # mysql的用户名
+        'PASSWORD': os.environ['DB_PASSWORD'], # mysql的密码
+        'HOST': os.environ['DB_HOST'], # 连接地址（本地的话使用localhost或者127.0.0.1）
         'PORT': 3306   # 数据库服务的端口号
     }
 }
