@@ -85,13 +85,13 @@ WSGI_APPLICATION = 'projectsite.wsgi.application'
 # mysql> SHOW GLOBAL VARIABLES LIKE 'PORT'; to check what port the database is running on
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',   # 加载驱动
+        'ENGINE': 'django.db.backends.mysql',
         'CONN_MAX_AGE': None,
-        'NAME': 'django', # 数据库名
-        'USER': os.environ['DB_USER'], # mysql的用户名
-        'PASSWORD': os.environ['DB_PASSWORD'], # mysql的密码
-        'HOST': os.environ['DB_HOST'], # 连接地址（本地的话使用localhost或者127.0.0.1）
-        'PORT': 3306   # 数据库服务的端口号
+        'NAME': 'django',
+        'USER': os.environ['DB_USER'],
+        'PASSWORD': os.environ['DB_PASSWORD'],
+        'HOST': os.environ['DB_HOST'],
+        'PORT': 3306
     }
 }
 
@@ -128,7 +128,7 @@ USE_L10N = True
 USE_TZ = True
 
 #MEDIA_ROOT this is the absolute path to the folder that will hold our user uploads. 
-MEDIA_ROOT = os.path.join(BASE_DIR, '').replace('\\', '/') # media即为图片上传的根路径
+MEDIA_ROOT = os.path.join(BASE_DIR, '').replace('\\', '/')
 MEDIA_URL = '/media/'
 #MEDIA_URL this is the relative browser URL to be used when accessing our media files in the browser.
 
