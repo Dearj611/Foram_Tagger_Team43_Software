@@ -135,8 +135,12 @@ MEDIA_URL = '/media/'
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
 
-STATIC_ROOT = "/home/site/wwwroot/allstaticfiles/"
-STATIC_URL = STATIC_ROOT
+STATICFILES_STORAGE = 'storages.backends.azure_storage.AzureStorage'
+AZURE_ACCOUNT_NAME = os.getenv('AZ_STORAGE_ACCOUNT_NAME')
+AZURE_CONTAINER = os.getenv('AZ_STORAGE_CONTAINER')
+AZURE_ACCOUNT_KEY = os.getenv('AZ_STORAGE_KEY')
+STATIC_ROOT = os.path.join(BASE_DIR, 'allstaticfiles')
+STATIC_URL = '/allstaticfiles/'
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static"),
 ]
