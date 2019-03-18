@@ -68,10 +68,10 @@ def get_all_forams(uploaded_file):
             img = cv.imread(os.path.join(dirpath, uploaded_file.name))
             boxes = filter_boxes(get_boxes(img, 100))
             forams = [img[box[1]:box[1]+box[3], box[0]:box[0]+box[2]] for box in boxes]
-    return forams
+    return forams, img
 
     
-def store_to_db(parent_img, forams, species, toStore, ext):
+def store_to_db(parent_img, forams, species, toStore):
     '''
     parent_img: the original image
     forams: numpy array
@@ -112,6 +112,7 @@ def store_to_db(parent_img, forams, species, toStore, ext):
         new_image.save()
     species_obj.total = F('total') + species_counter
     species_obj.save()
+    return parent_image
 
 
     
