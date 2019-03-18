@@ -112,7 +112,6 @@ pycparser==2.19
 Pygments==2.3.0
 pyparsing==2.3.0
 python-dateutil==2.7.5
-python-mnist==0.6
 pytz==2018.7
 PyWavelets==1.0.1
 pyzmq==17.1.2
