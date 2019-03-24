@@ -1,16 +1,21 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block content %}
 
-    <!-- Header -->
-    <header class="masthead d-flex">
-      <div class="container text-center my-auto">
-        <h1 class="mb-1">Foram-Tagger</h1>
-        <h2 class="mb-5">Automate the process and build a new library
-        </h2>
-        <a class="btn-get-started" href="{% url 'uploadImage' %}">Upload</a>
-        <a class="btn-get-started" href="{% url 'searchFunction' %}">Search</a>
-        <a class="btn-get-started" href="{% url 'displayImage' %}">Gallery</a>
-    </header>
+  <div class="container">
+    <div class="row fullscreen align-items-center justify-content-between" style="height:600px">
+      <div class="col-lg-6 col-md-7 col-sm-8">
+        <div class="banner-content">
+          <h1>Foram Tagger <br> </h1>
+          <p>Living in today’s technological world, we automate the process.</p>
+          <a href="#" class="primary-btn">Get Started<span class="lnr lnr-arrow-right"></span></a>
+        </div>
+      </div>
+      <div class="col-lg-5 col-md-5 col-sm-4">
+        <img src="{% static 'imgs/bg2.jpg' %}" alt="AH" class="img-fluid">
+      </div>
+    </div>
+
 
 {% endblock %}

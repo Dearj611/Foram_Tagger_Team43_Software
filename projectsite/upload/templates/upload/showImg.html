@@ -8,15 +8,14 @@
 
   <div class="section-header">
     <h3 class="section-title">Foram Gallery</h3>
-    <p class="section-description">View all the forams in the database.</p>
+    <p class="section-description">Search and iew all the forams in the database.</p>
   </div>
 
 
 <div class="row" id="portfolio-wrapper">
 {% for item in imgs %}
 <div class="col-lg-3 col-md-6 portfolio-item">
-  <a href="{{ item.imgLocation.url }}">
-    <img src="{{ item.imgLocation.url }}"><br/>
+    <img src="{{ item.imgLocation.url }}" style="width:100%" onclick="openModal();currentSlide({{forloop.counter}})" class="hover-shadow cursor"><br/>
     <div class="details">
       <h4>{{ item.species_id }}</h4>
       <span>Description</span>
@@ -24,7 +23,56 @@
   </a>
 </div>
 {% endfor %}
+  </div>
+
 </div>
 </section>
 
+
+<script>
+function openModal() {
+  document.getElementById('myModal').style.display = "block";
+  document.getElementById('sidebar').style.display = "none";
+
+}
+
+function openEdit() {
+  document.getElementById('edit').style.display = "none";
+}
+
+function closeModal() {
+  document.getElementById('myModal').style.display = "none";
+  document.getElementById('sidebar').style.display = "block";
+
+}
+
+var slideIndex = 1;
+showSlides(slideIndex);
+
+function plusSlides(n) {
+  showSlides(slideIndex += n);
+}
+
+function currentSlide(n) {
+  showSlides(slideIndex = n);
+}
+
+function showSlides(n) {
+  var i;
+  var slides = document.getElementsByClassName("mySlides");
+  var dots = document.getElementsByClassName("demo");
+  if (n > slides.length) {slideIndex = 1}
+  if (n < 1) {slideIndex = slides.length}
+  for (i = 0; i < slides.length; i++) {
+      slides[i].style.display = "none";
+  }
+  for (i = 0; i < dots.length; i++) {
+      dots[i].className = dots[i].className.replace(" active", "");
+  }
+  slides[slideIndex-1].style.display = "block";
+  dots[slideIndex-1].className += " active";
+}
+</script>
 {% endblock %}
+
+

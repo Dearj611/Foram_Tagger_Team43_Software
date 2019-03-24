@@ -24,13 +24,5 @@ $(function () {
     },
     'singleFileUploads': false
   });
-
-  $('#edit_button').click(function() {
-      $('.edit').toggle("slide");
-    });
-
-  $("#myBtn").click(function(){
-    $("#myModal").modal();
-  });
-
 });
+

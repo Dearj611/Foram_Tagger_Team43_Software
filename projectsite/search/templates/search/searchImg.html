@@ -7,8 +7,8 @@
 <section id="search">
 
   <div class="section-header">
-    <h3 class="section-title">Search</h3>
-    <p class="section-description">Search the forams in the library. </p>
+    <h3 class="section-title">Foram Gallery</h3>
+    <p class="section-description">Search and view all the forams in the database.</p>
   </div>
 
   <div class="container">
@@ -32,15 +32,6 @@
             </div>
           </form>
 
-<!--
-          {% if forams %}
-          {% for each_foram in forams %}
-            <img src="{{each_foram.url}}" alt="No Image">
-            <p>{{each_foram.imageLocation.url}}</p>
-            <p>{{each_foram.species}}</p>
-      {% endfor %}
-      {% endif %}
--->
 {% if message %}
 <div class="message">
   <p>{{message}}</p>
@@ -48,20 +39,18 @@
 {% endif %}
 
       {% if forams %}
-      <table id="gallery" class="table table-bordered">
-     <thead>
-       <tr>
-         <th>Images of {{species}}</th>
-       </tr>
-     </thead>
-     <tbody>
-       {% for each_foram in forams %}
-         <tr>
-           <td><img src="{{each_foram.url}}" alt="No Image"><br/>
-         </tr>
-       {% endfor %}
-     </tbody>
-   </table>
+      <div class="row" id="portfolio-wrapper">
+          {% for foram in forams %}
+          <div class="col-lg-3 col-md-6 portfolio-item">
+              <img src="{{ foram.imgLocation.url }}" style="width:100%" onclick="openModal();currentSlide({{forloop.counter}})" class="hover-shadow cursor"><br/>
+              <div class="details">
+                <h4>{{ foram.species_id }}</h4>
+                <span>Description</span>
+              </div>
+            </a>
+          </div>
+          {% endfor %}
+            </div>
    {% endif %}
 
 
@@ -71,4 +60,49 @@
 </div>
 </section>
 
+
+<script>
+    function openModal() {
+      document.getElementById('myModal').style.display = "block";
+      document.getElementById('sidebar').style.display = "none";
+    
+    }
+    
+    function openEdit() {
+      document.getElementById('edit').style.display = "none";
+    }
+    
+    function closeModal() {
+      document.getElementById('myModal').style.display = "none";
+      document.getElementById('sidebar').style.display = "block";
+    
+    }
+    
+    var slideIndex = 1;
+    showSlides(slideIndex);
+    
+    function plusSlides(n) {
+      showSlides(slideIndex += n);
+    }
+    
+    function currentSlide(n) {
+      showSlides(slideIndex = n);
+    }
+    
+    function showSlides(n) {
+      var i;
+      var slides = document.getElementsByClassName("mySlides");
+      var dots = document.getElementsByClassName("demo");
+      if (n > slides.length) {slideIndex = 1}
+      if (n < 1) {slideIndex = slides.length}
+      for (i = 0; i < slides.length; i++) {
+          slides[i].style.display = "none";
+      }
+      for (i = 0; i < dots.length; i++) {
+          dots[i].className = dots[i].className.replace(" active", "");
+      }
+      slides[slideIndex-1].style.display = "block";
+      dots[slideIndex-1].className += " active";
+    }
+    </script>
 {% endblock %}
