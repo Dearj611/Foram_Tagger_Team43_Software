@@ -55,5 +55,24 @@ Why do I keep getting connection error even though I've set an unlimited persist
 Change segmentation.py to the new version
 make sure data retrieval has been updated
 
-For you you really fuck up and need to remove a file from your git history
+For when you really fuck up and need to remove a file from your git history
 git filter-branch --index-filter 'git rm -r --cached --ignore-unmatch <file/dir>' HEAD
+
+'DfE20sYoWsd3xgg3xHcyhKZEHajZLbvB3hZ0csSR9ZlpzHYnT7AWtv39eAKP'
+'foram-tagger\$foram-tagger'
+ftp://waws-prod-ln1-011.ftp.azurewebsites.windows.net/
+wget -m --user='foram-tagger\$foram-tagger' --password='DfE20sYoWsd3xgg3xHcyhKZEHajZLbvB3hZ0csSR9ZlpzHYnT7AWtv39eAKP' ftp://waws-prod-ln1-011.ftp.azurewebsites.windows.net
+ncftp -u 'foram-tagger\$foram-tagger' -p 'DfE20sYoWsd3xgg3xHcyhKZEHajZLbvB3hZ0csSR9ZlpzHYnT7AWtv39eAKP' ftp://waws-prod-ln1-011.ftp.azurewebsites.windows.net
+
+Get info on which process is using port 80
+sudo netstat -nlp | grep :80
+
+Gives you info about your apache2
+apache2ctl -V
+
+Record time taken for segmentation
+Do cross validation with 4 sets
+have an export images function on the search page
+Allow the users to view indivudal images at a time
+Think about emplying a front-end framework (this was a design decision i should have made early on)
+Design a website

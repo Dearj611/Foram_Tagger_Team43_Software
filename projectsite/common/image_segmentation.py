@@ -40,7 +40,6 @@ def get_boxes(img, val):
     for i, c in enumerate(contours):
         contours_poly[i] = cv.approxPolyDP(c, 3, True)
         boundRect[i] = cv.boundingRect(contours_poly[i])
-    # print(boundRect)
     return boundRect
 
 
@@ -99,8 +98,8 @@ def sort_by_extremes(arr):
 
 def filter_boxes(boxes):
     '''
-    This function removes boxes that are too small
-    It also removes bounding boxes that essentially bound the same region
+    This function removes bounding boxes that are too small
+    It also removes boxes that essentially bound the same region
     '''
     boxes = [arr for arr in boxes if(arr[2]*arr[3]) > 1000]
     boxes = sorted(boxes, key=lambda x:x[0])
@@ -115,7 +114,7 @@ def filter_boxes(boxes):
             to_return.append(boxes[i])
     return to_return
 
-
+#'/home/camelcars/Documents/ucl2/systemsEng/872 1-1-0.2a G. ruber 300-355 um 1.jpg'
 def visualize_all(img, boxes):
     for i in range(len(boxes)):
         color = (rng.randint(0,256), rng.randint(0,256), rng.randint(0,256))
@@ -170,8 +169,10 @@ def get_species_name(string):
 
 def get_all_forams(img):
     '''
+    img: Numpy array
     Applying the bounding boxes to the original image
     to create a new list of images
+    Returns boxes applied to forams
     '''
     boxes = filter_boxes(get_boxes(img, 100))
     forams = [img[box[1]:box[1]+box[3], box[0]:box[0]+box[2]] for box in boxes]
@@ -270,7 +271,7 @@ def get_and_store(imgDir, toStore):
     imgDir: the source of all the parent images
     toStore: the directory where you want to store the images
     '''
-    block_blob_service = BlockBlobService(account_name='forampics', account_key='4nwt5cexYaNCgmsk5NrLLm5lmRprYobFVepz+hhb6b7hv2f6zifM1EPmoqT7SMTsUYvWSe3nREd/dS6g8Thjmg==')
+    block_blob_service = BlockBlobService(account_name='forampics', account_key='4nwt5cexYaNCgmsk5NrLLm5lmRprYobFVepz+hhb6b7hv2f6zifM1EPmoqT7SMTsUYvWSe3nREd/dS6g8Thjmg==')''
     for dirpath, directory, filename in os.walk(imgDir):
         if len(filename) == 0:
             continue

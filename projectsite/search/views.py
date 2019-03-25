@@ -6,13 +6,15 @@ from django.http import HttpResponse
 
 def search(request):
     if request.method == "GET":
-        search_key =  request.GET.get('search')
+        search_key = request.GET.get('search')
+        print(search_key)
+        print(search_key)
         try:
             result = Img.objects.filter(species=str(search_key)) # filter returns a list so you might consider skip except part
         except Img.DoesNotExist:
             result = None
         if search_key == None:
-            return render(request,"search/searchImg.html")
+            return render(request, "search/searchImg.html")
         result = Img.objects.filter(species=str(search_key)) # filter returns a list so you might consider skip except part
         if not result.exists():
             message = "Sorry, there is no image matching this foram."
