@@ -7,7 +7,7 @@ class ImgParent(models.Model):
     i.e. record how many forams are actually in this image
     '''
     imgLocation = models.ImageField(upload_to='parent', default='None')
-
+    imgEdited = models.ImageField(upload_to='parent_edited', default='None')
 
 class Species(models.Model):
     '''
@@ -21,7 +21,7 @@ class Img(models.Model):
     imgLocation = models.ImageField(upload_to='', default='None')
     species = models.ForeignKey(Species, on_delete=models.CASCADE, null=True)
     parentImage = models.ForeignKey(ImgParent, on_delete=models.CASCADE, null=True)
-
+    number_on_image = models.IntegerField(default=0)
 
 '''
 on_delete=CASCADE means that if I delete a species, then all the records

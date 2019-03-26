@@ -22,36 +22,29 @@
   <title>{% block title %}Foram-Tagger{% endblock %}</title>
 </head>
 
-<body id = "homepage">
+<body class= "main-body">
+    <div class="body-wrapper">
     <!-- Navigation -->
-    <div id="sidebar">
-        {% block sidebar %}
-        <a class="menu-toggle rounded" href="#">
-          <i class="fas fa-bars"></i>
-        </a>
-        <nav id="sidebar-wrapper">
-          <ul class="sidebar-nav">
-            <li class="sidebar-brand">
-              <a class="js-scroll-trigger" href="{% url 'index' %}">Foram Tagger</a>
-            </li>
-            <li class="sidebar-nav-item">
-              <a class="js-scroll-trigger" href="{% url 'displayImage' %}">Gallery</a>
-            </li>
-            <li class="sidebar-nav-item">
-              <a class="js-scroll-trigger" href="{% url 'uploadImage' %}">Upload</a>
-            </li>
-            <li class="sidebar-nav-item">
-              <a class="js-scroll-trigger" href="{% url 'searchFunction' %}">Search</a>
-            </li>
-          </ul>
-        </nav>
-        {% endblock %}
-    </div>
+        <header class="default-header">
+            <div class="header-wrap">
+              <div class="header-top d-flex justify-content-between align-items-center">
+                  <a href="{% url 'index' %}">foram-tagger</a>
+                <div class="main-menubar d-flex align-items-center">
+                  <nav >
+                    <a href="{% url 'index' %}">home</a>
+                    <a href="{% url 'uploadImage' %}">Upload</a>
+                    <a href="{% url 'searchFunction' %}">search</a>
 
+                  </nav>
+                </div>
+              </div>
+            </div>
+          </header>
 
-    <div id="content">
+          <section class="banner-area relative">
         {% block content %}{% endblock %}
-    </div>
+    </section>
+  </div>
 
 <!-- jQuery first, then Popper.js, then Bootstrap JS
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
@@ -60,7 +53,6 @@
  -->
  
     <script type="text/javascript" src="{% static 'js/jquery-3.1.1.min.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/foramTagger.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/bootstrap.min.js' %}"></script>
 
 
