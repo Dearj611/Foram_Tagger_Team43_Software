@@ -2,10 +2,25 @@ from __future__ import print_function
 import cv2 as cv
 import numpy as np
 import os, errno
+import random as rng
 from upload.models import Img, ImgParent, Species
 import tempfile
 import uuid
 from django.db.models import F
+from azure.storage.blob import BlockBlobService, PublicAccess
+
+
+def draw_on_image(img, boxes):
+    '''
+    Returns an image with bounding boxes drawn on
+    '''
+    for i in range(len(boxes)):
+        color = (rng.randint(0,256), rng.randint(0,256), rng.randint(0,256))
+        cv.rectangle(img, (int(boxes[i][0]), int(boxes[i][1])),
+          (int(boxes[i][0]+boxes[i][2]), int(boxes[i][1]+boxes[i][3])), color, 3)
+        cv.putText(img, str(i), (int(boxes[i][0]), int(boxes[i][1])),
+                   cv.FONT_HERSHEY_SIMPLEX, 1,(255,255,255),2,cv.LINE_AA)
+    return img
 
 
 def pre_processing(img):
@@ -114,5 +129,103 @@ def store_to_db(parent_img, forams, species, toStore):
     species_obj.save()
     return parent_image
 
+def store_to_remote_db(parent_img, forams, species, block_blob_service):
+    '''
+    parent_img: numpy array
+    forams: numpy array
+    species: str
+    The first part stores the parent image in the parent container
+    the For loop stores the segmented images
+    '''
+    try:
+        species_obj = Species.objects.get(name=species)
+    except Species.DoesNotExist:
+        species_obj = Species(name=species)
+        species_obj.save()
+    species_counter = 0
+    with tempfile.TemporaryDirectory() as dirpath:
+        filename = uuid.uuid4().hex + '.jpg'
+        filepath = os.path.join(dirpath, filename)
+        cv.imwrite(filepath, parent_img)
+        block_blob_service.create_container('parent')
+        block_blob_service.set_container_acl('parent', public_access=PublicAccess.Container)
+        block_blob_service.create_blob_from_path('parent', filename, filepath)
+        parent_image = ImgParent(imgLocation=os.path.join('parent', filename))
+        parent_image.save()
+        for foram in forams:    # stores segmented images
+            filename = uuid.uuid4().hex + '.jpg'
+            filepath = os.path.join(dirpath, filename)
+            cv.imwrite(filepath, foram)
+            block_blob_service.create_container(species)
+            block_blob_service.set_container_acl(species, public_access=PublicAccess.Container)
+            block_blob_service.create_blob_from_path(species, filename, filepath)
+            new_image = Img(imgLocation=os.path.join(species, filename),
+                            species=species_obj,
+                            parentImage=parent_image)
+            species_counter += 1
+            new_image.save()
+        species_obj.total = F('total') + species_counter
+        species_obj.save()
 
-    
+'''
+Much of what segmentation does is the same as the processing script. However I
+created a class here because the functions above are randomly processing stuff
+then randomly returning certain things. It is much better to implement a class,
+so that I can keep tract of the state
+'''
+class Foram:
+    def __init__(self, uploaded_file):
+        self.block_blob_service = BlockBlobService(os.environ['AZ_STORAGE_ACCOUNT_NAME'], os.environ['AZ_STORAGE_KEY'])
+        self.container = 'media'
+        self.parent_obj = None
+        self.species_obj = None
+        with tempfile.TemporaryDirectory() as dirpath:
+            with open(os.path.join(dirpath, uploaded_file.name), 'wb+') as destination:
+                for chunk in uploaded_file.chunks():
+                    destination.write(chunk)
+                self.parent_img = cv.imread(os.path.join(dirpath, uploaded_file.name))
+                self.boxes = filter_boxes(get_boxes(self.parent_img, 100))
+                self.forams = [self.parent_img[box[1]:box[1]+box[3], box[0]:box[0]+box[2]] for box in self.boxes]
+
+    def store_parents(self):
+        with tempfile.TemporaryDirectory() as dirpath:
+            parent_name = uuid.uuid4().hex + '.jpg'
+            edited_name = uuid.uuid4().hex + '.jpg'
+            cv.imwrite(os.path.join(dirpath, parent_name), self.parent_img)
+            cv.imwrite(os.path.join(dirpath, edited_name), draw_on_image(self.parent_img, self.boxes))
+            self.block_blob_service.create_blob_from_path(self.container,
+                                                          os.path.join('parent', parent_name),
+                                                          os.path.join(dirpath, parent_name))
+            self.block_blob_service.create_blob_from_path(self.container, 
+                                                          os.path.join('parent-edited', edited_name), 
+                                                          os.path.join(dirpath, edited_name))
+            self.parent_obj = ImgParent(imgLocation=os.path.join('parent', parent_name),
+                                        imgEdited=os.path.join('parent-edited', edited_name))
+            self.parent_obj.save()
+
+    def store_children(self):
+        with tempfile.TemporaryDirectory() as dirpath:
+            for num, foram in enumerate(self.forams):    # stores segmented images
+                child_name = uuid.uuid4().hex + '.jpg'
+                species = self.species_obj[num].name
+                cv.imwrite(os.path.join(dirpath, child_name), foram)
+                self.block_blob_service.create_blob_from_path(self.container, 
+                                                              os.path.join(species,child_name),
+                                                              os.path.join(dirpath, child_name))
+                new_image = Img(imgLocation=os.path.join(species, child_name),
+                                species=self.species_obj[num],
+                                parentImage=self.parent_obj,
+                                number_on_image=num)
+                new_image.save()
+
+    def set_species(self):
+        '''
+        Sets self.species_obj to an array of species objects
+        '''
+        try:
+            species_obj = Species.objects.get(name='dummy')
+        except Species.DoesNotExist:
+            species_obj = Species(name='dummy')
+            species_obj.save()
+        self.species_obj = [species_obj for i in range(len(self.forams))]
+

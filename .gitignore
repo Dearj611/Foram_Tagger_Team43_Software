@@ -45,6 +45,7 @@ migrations/
 .gitattributes
 mnist/
 learn-pytorch/
+models.py
 
 # PyTorch
 *.pt

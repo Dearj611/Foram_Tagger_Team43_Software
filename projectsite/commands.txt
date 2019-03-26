@@ -74,5 +74,12 @@ Record time taken for segmentation
 Do cross validation with 4 sets
 have an export images function on the search page
 Allow the users to view indivudal images at a time
-Think about emplying a front-end framework (this was a design decision i should have made early on)
+Think about employing a front-end framework (this was a design decision i should have made early on)
 Design a website
+
+https://forampics.blob.core.windows.net/parent-edited/2c4dd49fb8644b419425fecb3fcc30c5.jpg
+azcopy \
+	--source 'https://forampics.blob.core.windows.net/$logs' \
+	--destination ./container-logs \
+	--source-key '4nwt5cexYaNCgmsk5NrLLm5lmRprYobFVepz+hhb6b7hv2f6zifM1EPmoqT7SMTsUYvWSe3nREd/dS6g8Thjmg==' \
+	--recursive

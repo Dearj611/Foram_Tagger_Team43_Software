@@ -54,14 +54,14 @@
             <div class="display">
 
                 {% for parent in parents %}
-                <img src="{{ parent.imgLocation.url }}"><br/>
+                <img src="{{ parent.custom_url }}"><br/>
                 {% endfor %}
 
               {% for photo in photos %}
               <div class="display_items">
 
               <div class="button_container">
-              <img src="{{ photo.imgLocation.url }}"><br/>
+              <img src="{{ photo.custom_url }}"><br/>
               <form method="post" action="{% url 'uploadImage' %}">
                   {% csrf_token %}
                 <input type="text" name="delete_img_id" value="{{ photo.pk }}" hidden>

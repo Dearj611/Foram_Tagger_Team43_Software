@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 
 import os
 
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 # base_dir = /home/camelcars/Documents/ucl2/systemsEng/software_FT
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -24,7 +25,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = os.environ['SECRET_KEY']
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
@@ -128,13 +129,15 @@ USE_L10N = True
 
 USE_TZ = True
 
-#MEDIA_ROOT this is the absolute path to the folder that will hold our user uploads. 
-MEDIA_ROOT = os.path.join(BASE_DIR, '').replace('\\', '/')
-MEDIA_URL = '/media/'
+#MEDIA_ROOT this is the absolute path to the folder that will hold our user uploads.
+# https://forampics.blob.core.windows.net/allstaticfiles/36.tif
+MEDIA_ROOT = '/'
+MEDIA_URL = r"/https://forampics.blob.core.windows.net/media/"
 #MEDIA_URL this is the relative browser URL to be used when accessing our media files in the browser.
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/2.1/howto/static-files/
+
+# DEFAULT_FILE_STORAGE = 'custom_storage.custom_azure.ImageAzureStorage'
+
 
 STATICFILES_STORAGE = 'storages.backends.azure_storage.AzureStorage'
 AZURE_ACCOUNT_NAME = os.getenv('AZ_STORAGE_ACCOUNT_NAME')
