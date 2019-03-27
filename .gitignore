@@ -39,6 +39,11 @@ coverage.xml
 # Jupyter Notebook
 .ipynb_checkpoints
 
+# PyTorch
+*.pt
+*.pth
+
+# custom
 node_modules/
 ./projectsite/commands.txt
 migrations/
@@ -46,8 +51,6 @@ migrations/
 mnist/
 learn-pytorch/
 models.py
-
-# PyTorch
-*.pt
-*.pth
 training-images/
+envvar.txt
+allstaticfiles/

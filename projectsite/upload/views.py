@@ -6,10 +6,10 @@ from django.http import JsonResponse, HttpResponseRedirect
 from django.views import View
 from .forms import ImageUploadForm
 from common import segmentation as seg
-import os
 from pathlib import Path
 from urllib.parse import urlparse, parse_qs
 from common.segmentation import Foram
+
 
 class BasicUploadView(View):
     def get(self, request):
@@ -18,13 +18,13 @@ class BasicUploadView(View):
             photos_list = []
             parent_list = []
             for imgLocation in imgLocations:
-                # parent = ImgParent.objects.filter(imgLocation=imgLocation)[0]
                 parent = ImgParent.objects.get(pk=int(imgLocation))
-                parent.custom_url = parent.imgLocation.url[1:]
+                parent.custom_url = parent.imgEdited.url[1:]
                 parent_list.append(parent)
-                child = Img.objects.get(parentImage=parent)
-                child.custom_url = child.imgLocation.url[1:]
-                photos_list.append(child)
+                child = Img.objects.filter(parentImage=parent)
+                for c in child:
+                    c.custom_url = c.imgLocation.url[1:]
+                    photos_list.append(c)
                 # tag = True
                 # try:
                 #     img = Img.objects.get(imgLocation=imgLocation)

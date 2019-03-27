@@ -8,6 +8,8 @@ import tempfile
 import uuid
 from django.db.models import F
 from azure.storage.blob import BlockBlobService, PublicAccess
+from common import inference
+import json
 
 
 def draw_on_image(img, boxes):
@@ -129,6 +131,7 @@ def store_to_db(parent_img, forams, species, toStore):
     species_obj.save()
     return parent_image
 
+
 def store_to_remote_db(parent_img, forams, species, block_blob_service):
     '''
     parent_img: numpy array
@@ -185,7 +188,7 @@ class Foram:
                     destination.write(chunk)
                 self.parent_img = cv.imread(os.path.join(dirpath, uploaded_file.name))
                 self.boxes = filter_boxes(get_boxes(self.parent_img, 100))
-                self.forams = [self.parent_img[box[1]:box[1]+box[3], box[0]:box[0]+box[2]] for box in self.boxes]
+                self.forams = [self.parent_img[box[1]:box[1] + box[3], box[0]:box[0] + box[2]] for box in self.boxes]
 
     def store_parents(self):
         with tempfile.TemporaryDirectory() as dirpath:
@@ -210,7 +213,7 @@ class Foram:
                 species = self.species_obj[num].name
                 cv.imwrite(os.path.join(dirpath, child_name), foram)
                 self.block_blob_service.create_blob_from_path(self.container, 
-                                                              os.path.join(species,child_name),
+                                                              os.path.join(species, child_name),
                                                               os.path.join(dirpath, child_name))
                 new_image = Img(imgLocation=os.path.join(species, child_name),
                                 species=self.species_obj[num],
@@ -222,10 +225,19 @@ class Foram:
         '''
         Sets self.species_obj to an array of species objects
         '''
-        try:
-            species_obj = Species.objects.get(name='dummy')
-        except Species.DoesNotExist:
-            species_obj = Species(name='dummy')
-            species_obj.save()
-        self.species_obj = [species_obj for i in range(len(self.forams))]
+        species_obj_list = []
+        data = [foram.tolist() for foram in self.forams]
+        predictions = inference.run(json.dumps({"data": data}))
+        predictions = json.loads(predictions)["data"]
+        predictions = [(key, value["true_class"]) for key, value in predictions.items()]
+        predictions = sorted(predictions, key=lambda x: x[0])
+        predictions = [i[1] for i in predictions]
+        for species in predictions:
+            try:
+                species_obj = Species.objects.get(name=species)
+            except Species.DoesNotExist:
+                species_obj = Species(name=species)
+                species_obj.save()
+            species_obj_list.append(species_obj)
+        self.species_obj = species_obj_list
 
