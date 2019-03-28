@@ -50,7 +50,6 @@ migrations/
 .gitattributes
 mnist/
 learn-pytorch/
-models.py
 training-images/
 envvar.txt
 allstaticfiles/

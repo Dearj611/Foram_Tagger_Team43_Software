@@ -42,6 +42,8 @@ There are currently 17 species
 
 num = [(str(species), len(Img.objects.all().filter(species=species))) for species in all_species]
 
+ssh zongchua@knuckles.cs.ucl.ac.uk
+ssh blaze
 scp vgg16-transfer-4.pt vgg16-transfer-4.pth camelcars@81.110.229.51:~/
 scp model2.py zongchua@knuckles.cs.ucl.ac.uk:~/Documents/ucl2/Foram_Tagger_Team43_Software/projectsite/common
 
@@ -83,3 +85,12 @@ azcopy \
 	--destination ./container-logs \
 	--source-key '4nwt5cexYaNCgmsk5NrLLm5lmRprYobFVepz+hhb6b7hv2f6zifM1EPmoqT7SMTsUYvWSe3nREd/dS6g8Thjmg==' \
 	--recursive
+
+Incorrect segmentation
+total images = 1681
+correct images = 1559
+92.74% segmentation accuracy
+crassaformis:0
+elongatus:1
+hexagonus:2
+
