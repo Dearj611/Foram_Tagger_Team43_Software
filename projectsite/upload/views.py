@@ -1,14 +1,12 @@
-from django.shortcuts import render,redirect
-from django.urls import reverse
+from django.shortcuts import render, redirect
 from upload.models import Img, Species, ImgParent
 from upload.forms import ImageUploadForm
-from django.http import JsonResponse, HttpResponseRedirect
+from django.http import JsonResponse
 from django.views import View
-from .forms import ImageUploadForm
-from common import segmentation as seg
-from pathlib import Path
-from urllib.parse import urlparse, parse_qs
 from common.segmentation import Foram
+from azure.storage.blob import BlockBlobService
+import os
+import tempfile
 
 
 class BasicUploadView(View):
@@ -41,13 +39,14 @@ class BasicUploadView(View):
             try:
                 corrected_species = Species.objects.get(name=request.POST['species'])
             except Species.DoesNotExist:
-                corrected_species = Species(name=request.POST['species'], total=1)
-            corrected_species.save()
+                corrected_species = Species(name=request.POST['species'])
+                corrected_species.save()
             Img.objects.filter(pk=request.POST['edit_img_id']).update(species=corrected_species)
             url = request.POST['original_url']
             return redirect(url)
         elif 'delete_img_id' in request.POST:
             img = Img.objects.get(pk=request.POST['delete_img_id'])
+
             img.imgLocation.delete()
             img.delete()
             url = request.POST['original_url']
@@ -56,8 +55,9 @@ class BasicUploadView(View):
             foram_obj_list = []
             form = ImageUploadForm(request.POST, request.FILES)
             if form.is_valid():
+                block_blob_service = BlockBlobService(os.environ['AZ_STORAGE_ACCOUNT_NAME'], os.environ['AZ_STORAGE_KEY'])
                 for file in request.FILES.getlist('imgLocation'):
-                    foram_obj = Foram(file)
+                    foram_obj = Foram(file, block_blob_service)
                     foram_obj.store_parents()
                     foram_obj.set_species()
                     foram_obj.store_children()
