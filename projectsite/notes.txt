@@ -33,7 +33,8 @@ git commit -m "remove file1.txt"
 Moves the most recent commit back to the staging area
 git reset --soft HEAD^ 
 
-git reset --soft HEAD^ 
+To revert a merge. This will point to a commit before the merge occurred
+git reset --hard ORIG_HEAD
 
 from importlib import reload
 
