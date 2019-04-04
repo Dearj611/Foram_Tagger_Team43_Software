@@ -1,0 +1,5 @@
+projectsite/upload/migrations/*.py -diff
+projectsite/upload/models.py -diff
+
+./projectsite/projectsite/wsgi.py merge=ours
+manage.py merge=ours

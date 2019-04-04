@@ -36,6 +36,9 @@ git reset --soft HEAD^
 To revert a merge. This will point to a commit before the merge occurred
 git reset --hard ORIG_HEAD
 
+If you want to modify the latest commit
+git reset HEAD^
+
 from importlib import reload
 
 Img.objects.values_list('species', flat=True).distinct()

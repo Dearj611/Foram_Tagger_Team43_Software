@@ -45,7 +45,7 @@ coverage.xml
 # custom
 node_modules/
 migrations/
-.gitattributes
+# .gitattributes
 mnist/
 learn-pytorch/
 training-images/
