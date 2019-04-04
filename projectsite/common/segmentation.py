@@ -7,10 +7,10 @@ from upload.models import Img, ImgParent, Species
 import tempfile
 import uuid
 from django.db.models import F
-from azure.storage.blob import BlockBlobService, PublicAccess
+from azure.storage.blob import PublicAccess
 from common import inference
 import json
-
+from azure.storage.blob import BlockBlobService
 
 def draw_on_image(img, boxes):
     '''
@@ -174,52 +174,59 @@ def store_to_remote_db(parent_img, forams, species, block_blob_service):
 Much of what segmentation does is the same as the processing script. However I
 created a class here because the functions above are randomly processing stuff
 then randomly returning certain things. It is much better to implement a class,
-so that I can keep tract of the state
+so that I can keep track of the state. Also the state is heavily used in the views
 '''
+
+
 class Foram:
-    def __init__(self, uploaded_file):
-        self.block_blob_service = BlockBlobService(os.environ['AZ_STORAGE_ACCOUNT_NAME'], os.environ['AZ_STORAGE_KEY'])
-        self.container = 'media'
+    container = 'media'
+    block_blob_service = BlockBlobService(os.environ['AZ_STORAGE_ACCOUNT_NAME'], os.environ['AZ_STORAGE_KEY'])
+
+    def __init__(self, uploaded_file, dirpath):
+        self.uploaded_file = uploaded_file
+        self.dirpath = dirpath
         self.parent_obj = None
         self.species_obj = None
-        with tempfile.TemporaryDirectory() as dirpath:
-            with open(os.path.join(dirpath, uploaded_file.name), 'wb+') as destination:
-                for chunk in uploaded_file.chunks():
-                    destination.write(chunk)
-                self.parent_img = cv.imread(os.path.join(dirpath, uploaded_file.name))
-                self.boxes = filter_boxes(get_boxes(self.parent_img, 100))
-                self.forams = [self.parent_img[box[1]:box[1] + box[3], box[0]:box[0] + box[2]] for box in self.boxes]
+        self.parent_img = None
+        self.boxes = None
+        self.forams = None
+
+    def segment(self):
+        with open(os.path.join(self.dirpath, self.uploaded_file.name), 'wb+') as destination:
+            for chunk in self.uploaded_file.chunks():
+                destination.write(chunk)
+            self.parent_img = cv.imread(os.path.join(self.dirpath, self.uploaded_file.name))
+            self.boxes = filter_boxes(get_boxes(self.parent_img, 100))
+            self.forams = [self.parent_img[box[1]:box[1] + box[3], box[0]:box[0] + box[2]] for box in self.boxes]
 
     def store_parents(self):
-        with tempfile.TemporaryDirectory() as dirpath:
-            parent_name = uuid.uuid4().hex + '.jpg'
-            edited_name = uuid.uuid4().hex + '.jpg'
-            cv.imwrite(os.path.join(dirpath, parent_name), self.parent_img)
-            cv.imwrite(os.path.join(dirpath, edited_name), draw_on_image(self.parent_img, self.boxes))
-            self.block_blob_service.create_blob_from_path(self.container,
-                                                          os.path.join('parent', parent_name),
-                                                          os.path.join(dirpath, parent_name))
-            self.block_blob_service.create_blob_from_path(self.container, 
-                                                          os.path.join('parent-edited', edited_name), 
-                                                          os.path.join(dirpath, edited_name))
-            self.parent_obj = ImgParent(imgLocation=os.path.join('parent', parent_name),
-                                        imgEdited=os.path.join('parent-edited', edited_name))
-            self.parent_obj.save()
+        parent_name = uuid.uuid4().hex + '.jpg'
+        edited_name = uuid.uuid4().hex + '.jpg'
+        cv.imwrite(os.path.join(self.dirpath, parent_name), self.parent_img)
+        cv.imwrite(os.path.join(self.dirpath, edited_name), draw_on_image(self.parent_img, self.boxes))
+        self.block_blob_service.create_blob_from_path(self.container,
+                                                      os.path.join('parent', parent_name),
+                                                      os.path.join(self.dirpath, parent_name))
+        self.block_blob_service.create_blob_from_path(self.container, 
+                                                      os.path.join('parent-edited', edited_name), 
+                                                      os.path.join(self.dirpath, edited_name))
+        self.parent_obj = ImgParent(imgLocation=os.path.join('parent', parent_name),
+                                    imgEdited=os.path.join('parent-edited', edited_name))
+        self.parent_obj.save()
 
     def store_children(self):
-        with tempfile.TemporaryDirectory() as dirpath:
-            for num, foram in enumerate(self.forams):    # stores segmented images
-                child_name = uuid.uuid4().hex + '.jpg'
-                species = self.species_obj[num].name
-                cv.imwrite(os.path.join(dirpath, child_name), foram)
-                self.block_blob_service.create_blob_from_path(self.container, 
-                                                              os.path.join(species, child_name),
-                                                              os.path.join(dirpath, child_name))
-                new_image = Img(imgLocation=os.path.join(species, child_name),
-                                species=self.species_obj[num],
-                                parentImage=self.parent_obj,
-                                number_on_image=num)
-                new_image.save()
+        for num, foram in enumerate(self.forams):    # stores segmented images
+            child_name = uuid.uuid4().hex + '.jpg'
+            species = self.species_obj[num].name
+            cv.imwrite(os.path.join(self.dirpath, child_name), foram)
+            self.block_blob_service.create_blob_from_path(self.container, 
+                                                          os.path.join(species, child_name),
+                                                          os.path.join(self.dirpath, child_name))
+            new_image = Img(imgLocation=os.path.join(species, child_name),
+                            species=self.species_obj[num],
+                            parentImage=self.parent_obj,
+                            number_on_image=num)
+            new_image.save()
 
     def set_species(self):
         '''
@@ -241,3 +248,30 @@ class Foram:
             species_obj_list.append(species_obj)
         self.species_obj = species_obj_list
 
+    @classmethod
+    def delete_foram(self, id):
+        img = Img.objects.all(id=id)
+        self.block_blob_service.delete_blob(self.container, img.imgLocation.name)
+        img.delete()
+
+    @classmethod
+    def update_species(self, id, species):
+        try:
+            corrected_species = Species.objects.get(species)
+        except Species.DoesNotExist:
+            corrected_species = Species(species)
+            corrected_species.save()
+        img = Img.objects.all(id=id)
+        new_location = os.path.join(corrected_species.name, os.path.basename(img.imgLocation.name))
+        copy_blob = self.block_blob_service.copy_blob(self.container,
+                                                      new_location,
+                                                      img.imgLocation.url[1:])
+        if copy_blob.status == 'success':
+            self.block_blob_service.delete_blob(self.container, img.imgLocation.name)
+        else:
+            print(copy_blob.status)
+        Img.objects.filter(pk=id).update(imgLocation=new_location, species=corrected_species)
+        
+        
+
+# https://forampics.blob.core.windows.net/media/g-ruber/021ce59c3780404f856865e1d59d1155.jpg

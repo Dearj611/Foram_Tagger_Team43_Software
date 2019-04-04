@@ -53,3 +53,5 @@ learn-pytorch/
 training-images/
 envvar.txt
 allstaticfiles/
+httpd.conf
+azureml-models/

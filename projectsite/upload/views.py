@@ -1,15 +1,12 @@
-from django.shortcuts import render,redirect
-from django.urls import reverse
+from django.shortcuts import render, redirect
 from upload.models import Img, Species, ImgParent
 from upload.forms import ImageUploadForm
-from django.http import JsonResponse, HttpResponseRedirect
+from django.http import JsonResponse
 from django.views import View
-from .forms import ImageUploadForm
-from common import segmentation as seg
-from pathlib import Path
-from urllib.parse import urlparse, parse_qs
 from common.segmentation import Foram
-
+from azure.storage.blob import BlockBlobService
+import os
+import tempfile
 
 class BasicUploadView(View):
     def get(self, request):
@@ -38,30 +35,25 @@ class BasicUploadView(View):
 
     def post(self, request):
         if 'edit_img_id' in request.POST: # editing the tags
-            try:
-                corrected_species = Species.objects.get(name=request.POST['species'])
-            except Species.DoesNotExist:
-                corrected_species = Species(name=request.POST['species'], total=1)
-            corrected_species.save()
-            Img.objects.filter(pk=request.POST['edit_img_id']).update(species=corrected_species)
+            Foram.update_species(request.POST['edit_img_id'], request.POST['species'])
             url = request.POST['original_url']
             return redirect(url)
         elif 'delete_img_id' in request.POST:
-            img = Img.objects.get(pk=request.POST['delete_img_id'])
-            img.imgLocation.delete()
-            img.delete()
+            Foram.delete_foram(request.POST['delete_img_id'])
             url = request.POST['original_url']
             return redirect(url)
         else:   # upload the images
             foram_obj_list = []
             form = ImageUploadForm(request.POST, request.FILES)
             if form.is_valid():
-                for file in request.FILES.getlist('imgLocation'):
-                    foram_obj = Foram(file)
-                    foram_obj.store_parents()
-                    foram_obj.set_species()
-                    foram_obj.store_children()
-                    foram_obj_list.append(foram_obj)
+                with tempfile.TemporaryDirectory() as dirpath:
+                    for file in request.FILES.getlist('imgLocation'):
+                        foram_obj = Foram(file, dirpath)
+                        foram_obj.segment()
+                        foram_obj.store_parents()
+                        foram_obj.set_species()
+                        foram_obj.store_children()
+                        foram_obj_list.append(foram_obj)
                 data = {'is_valid': True, 'urls': [obj.parent_obj.pk for obj in foram_obj_list]}
             else:
                 print("erroraleart", form.errors)
@@ -75,7 +67,7 @@ def showImg(request):
             corrected_species = Species.objects.get(name=request.POST['species'])
         except Species.DoesNotExist:
             corrected_species = Species(name=request.POST['species'], total=1)
-        corrected_species.save()
+            corrected_species.save()
         Img.objects.filter(pk=request.POST['img_id']).update(species=corrected_species)
         url = request.POST['original_url']
         return redirect(url)

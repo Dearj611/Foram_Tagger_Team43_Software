@@ -18,6 +18,7 @@ def run():
                        subscription_id='d90d34f0-1175-4d80-a89e-b74e16c0e31b',
                        auth=svc_pr)
     model_path = Model.get_model_path('foram-resnet18', _workspace=ws)
+    print(model_path)
     model = load_checkpoint(model_path)
 
 

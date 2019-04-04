@@ -44,8 +44,12 @@ num = [(str(species), len(Img.objects.all().filter(species=species))) for specie
 
 ssh zongchua@knuckles.cs.ucl.ac.uk
 ssh blaze
-scp vgg16-transfer-4.pt vgg16-transfer-4.pth camelcars@81.110.229.51:~/
+scp vgg16-transfer-4.pt vgg16-transfer-4.pth camelcars@81.110.229.51:~/Documents/ucl2/systemsEng/software_FT/develop_models/model1/
 scp model2.py zongchua@knuckles.cs.ucl.ac.uk:~/Documents/ucl2/Foram_Tagger_Team43_Software/projectsite/common
+scp -r develop_models zongchua@knuckles.cs.ucl.ac.uk:~/Documents/ucl2/develop_models/model1/
+rsync -avzh model1/model1.py zongchua@knuckles.cs.ucl.ac.uk:~/Documents/ucl2/develop_models/model1/
+rsync -avzh model2/model2.py zongchua@knuckles.cs.ucl.ac.uk:~/Documents/ucl2/develop_models/model2/
+rsync -avzh explore/explore_model.py zongchua@knuckles.cs.ucl.ac.uk:~/Documents/ucl2/develop_models/explore/
 
 Lists the files in a commit
 git diff-tree --no-commit-id --name-status -r 2995814
@@ -54,7 +58,6 @@ git show --name-only 2995814
 To do next:
 Write an integration test to show that all databases are functioning correctly
 Why do I keep getting connection error even though I've set an unlimited persistent connection
-Change segmentation.py to the new version
 make sure data retrieval has been updated
 
 For when you really fuck up and need to remove a file from your git history
@@ -68,16 +71,17 @@ ncftp -u 'foram-tagger\$foram-tagger' -p 'DfE20sYoWsd3xgg3xHcyhKZEHajZLbvB3hZ0cs
 
 Get info on which process is using port 80
 sudo netstat -nlp | grep :80
-
 Gives you info about your apache2
 apache2ctl -V
+Change file owner
+chmod :<group> <filename>
 
 Record time taken for segmentation
-Do cross validation with 4 sets
 have an export images function on the search page
 Allow the users to view indivudal images at a time
 Think about employing a front-end framework (this was a design decision i should have made early on)
 Design a website
+Is there a network wide learning rate or is there a learning rate per neuron?
 
 https://forampics.blob.core.windows.net/parent-edited/2c4dd49fb8644b419425fecb3fcc30c5.jpg
 azcopy \
