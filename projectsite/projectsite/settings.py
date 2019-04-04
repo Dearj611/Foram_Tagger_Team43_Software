@@ -12,7 +12,6 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 
 import os
 
-
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 # base_dir = /home/camelcars/Documents/ucl2/systemsEng/software_FT
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -132,7 +131,7 @@ USE_TZ = True
 #MEDIA_ROOT this is the absolute path to the folder that will hold our user uploads.
 # https://forampics.blob.core.windows.net/allstaticfiles/36.tif
 MEDIA_ROOT = '/'
-MEDIA_URL = r"/https://forampics.blob.core.windows.net/media/"
+MEDIA_URL = os.getenv('AZURE_BLOB_URL')
 #MEDIA_URL this is the relative browser URL to be used when accessing our media files in the browser.
 
 
@@ -148,5 +147,3 @@ STATIC_URL = '/allstaticfiles/'
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static"),
 ]
-
-
