@@ -24,12 +24,12 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = os.environ['SECRET_KEY']
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
 # Tells your WSGI application what settings file to use
-os.environ['DJANGO_SETTINGS_MODULE'] = 'projectsite.production_settings'
+os.environ['DJANGO_SETTINGS_MODULE'] = 'projectsite.settings'
 
 # Application definition
 
@@ -137,6 +137,9 @@ MEDIA_URL = os.getenv('AZURE_BLOB_URL')
 
 # DEFAULT_FILE_STORAGE = 'custom_storage.custom_azure.ImageAzureStorage'
 
+# Allows me to see stdout
+NOSE_ARGS = ['--nocapture',
+             '--nologcapture',]
 
 STATICFILES_STORAGE = 'storages.backends.azure_storage.AzureStorage'
 AZURE_ACCOUNT_NAME = os.getenv('AZ_STORAGE_ACCOUNT_NAME')
