@@ -13,4 +13,7 @@ from django.core.wsgi import get_wsgi_application
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'projectsite.settings')
 
+import projectsite.startup as startup
+startup.run()
+
 application = get_wsgi_application()
