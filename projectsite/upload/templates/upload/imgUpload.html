@@ -53,12 +53,16 @@
 
             <div class="display">
 
-                {% for parent in parents %}
-                <img src="{{ parent.custom_url }}"><br/>
-                {% endfor %}
+              {% for parent in parents %}
+              <div class="display_wrapper">
+                <div class="container">
 
-              {% for photo in photos %}
-              <div class="display_items">
+                        <div class="parent_item">
+                          <img src="{{ parent.custom_url }}"><br/>
+                        </div>
+
+              {% for photo in photos.{{forloop.counter}} %}
+              <div class="col-lg-3 col-md-6 display_items">
 
               <div class="button_container">
               <img src="{{ photo.custom_url }}"><br/>
@@ -71,13 +75,13 @@
                 </button>
                 </form>
                 <p>{{ photo.number_on_image}}</p>
-                <button type="submit" class="btn btn-primary" id="edit_button" onclick="openEdit({{forloop.counter}})">
+                <button type="submit" class="btn btn-primary" id="edit_button" onclick="openEdit({{forloop.parentloop.counter}}, {{forloop.counter}})">
                   <span class="glyphicon glyphicon-edit"></span></button>
               </div>
 
                   <p>{{ photo.species_id }}</p>
 
-                  <div class="edit" id="display_{{forloop.counter}}" style="display: none;">
+                  <div class="edit" id="display{{forloop.parentloop.counter}}_{{forloop.counter}}" style="display: none;">
                   <form method="post" action="{% url 'uploadImage' %}">
                     {% csrf_token %}
                     <input type="text" name="edit_img_id" value="{{photo.pk}}" hidden>
@@ -87,8 +91,11 @@
                    </form>
                    </div>
                    </div>
-              {% endfor %}
-        </div>
+                   {% endfor %}
+                  </div>
+                </div>
+                {% endfor %}
+            </div>
 
 
     </div> <!-- /container -->
@@ -107,8 +114,8 @@
   <script src="{% static 'js/js_upload/jquery.fileupload.js' %}"></script>
   <script src="{% static '/js/basic-upload.js' %}"></script>
   <script>
-    function openEdit(n) {
-      id = 'display_' + n.toString();
+    function openEdit(m, n) {
+      id = 'display'+m.toString() + '_' + n.toString();
       document.getElementById(id).style.display = "block";
 }
 

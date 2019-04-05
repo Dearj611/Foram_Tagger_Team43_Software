@@ -22,9 +22,11 @@ class BasicUploadView(View):
                 parent.custom_url = parent.imgEdited.url[1:]
                 parent_list.append(parent)
                 child = Img.objects.filter(parentImage=parent)
+                temp_list=[]
                 for c in child:
                     c.custom_url = c.imgLocation.url[1:]
-                    photos_list.append(c)
+                    temp_list.append(c)
+                photos_list.append(temp_list)
                 # tag = True
                 # try:
                 #     img = Img.objects.get(imgLocation=imgLocation)
