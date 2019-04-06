@@ -30,7 +30,7 @@ DEBUG = True
 ALLOWED_HOSTS = ['*']
 
 # Tells your WSGI application what settings file to use
-os.environ['DJANGO_SETTINGS_MODULE'] = 'projectsite.production_settings'
+os.environ['DJANGO_SETTINGS_MODULE'] = 'projectsite.settings'
 
 # Application definition
 

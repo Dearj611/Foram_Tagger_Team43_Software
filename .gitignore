@@ -9,7 +9,6 @@ __pycache__/
 local_settings.py
 db.sqlite3
 media
-projectsite/projectsite/settings.py
 
 ### Visual Studio ###
 .vscode
@@ -45,7 +44,6 @@ coverage.xml
 
 # custom
 node_modules/
-./projectsite/commands.txt
 migrations/
 .gitattributes
 mnist/

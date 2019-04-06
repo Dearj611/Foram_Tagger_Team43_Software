@@ -33,7 +33,9 @@ git commit -m "remove file1.txt"
 Moves the most recent commit back to the staging area
 git reset --soft HEAD^ 
 
-git reset --soft HEAD^ 
+To revert to a previous commit
+git reset --hard HEAD
+
 
 from importlib import reload
 
