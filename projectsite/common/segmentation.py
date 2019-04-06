@@ -174,6 +174,3 @@ class Foram:
         else:
             print(copy_blob.status)
         Img.objects.filter(pk=id).update(imgLocation=new_location, species=corrected_species)
-        
-
-# https://forampics.blob.core.windows.net/media/g-ruber/021ce59c3780404f856865e1d59d1155.jpg
