@@ -250,7 +250,7 @@ class Foram:
 
     @classmethod
     def delete_foram(self, id):
-        img = Img.objects.all(id=id)
+        img = Img.objects.get(id=id)
         self.block_blob_service.delete_blob(self.container, img.imgLocation.name)
         img.delete()
 
@@ -261,7 +261,7 @@ class Foram:
         except Species.DoesNotExist:
             corrected_species = Species(species)
             corrected_species.save()
-        img = Img.objects.all(id=id)
+        img = Img.objects.get(id=id)
         new_location = os.path.join(corrected_species.name, os.path.basename(img.imgLocation.name))
         copy_blob = self.block_blob_service.copy_blob(self.container,
                                                       new_location,

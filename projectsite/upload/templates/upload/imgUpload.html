@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load custom_tag %}
 
 {% block title %}Upload Photo {% endblock %}
 {% block header %}
@@ -61,7 +62,7 @@
                           <img src="{{ parent.custom_url }}"><br/>
                         </div>
 
-              {% for photo in photos.{{forloop.counter}} %}
+              {% for photo in photos|index:forloop.counter0 %}
               <div class="col-lg-3 col-md-6 display_items">
 
               <div class="button_container">
