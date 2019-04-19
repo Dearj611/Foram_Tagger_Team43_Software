@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load custom_tag %}
 
 {% block title %}Upload Photo {% endblock %}
 {% block header %}
@@ -56,16 +57,16 @@
               {% for parent in parents %}
               <div class="display_wrapper">
                 <div class="container">
-
-                        <div class="parent_item">
-                          <img src="{{ parent.custom_url }}"><br/>
+                  <div class="parent_wrapper">
+                          <img class="parent_item" src="{{ parent.custom_url }}"><br/>
                         </div>
 
-              {% for photo in photos.{{forloop.counter}} %}
-              <div class="col-lg-3 col-md-6 display_items">
+              <div class="display_row">
+              {% for photo in photos|index:forloop.counter0 %}
+              <div class="display_items">
 
               <div class="button_container">
-              <img src="{{ photo.custom_url }}"><br/>
+              <img style="width:100%" src="{{ photo.custom_url }}"><br/>
               <form method="post" action="{% url 'uploadImage' %}">
                   {% csrf_token %}
                 <input type="text" name="delete_img_id" value="{{ photo.pk }}" hidden>
@@ -74,12 +75,12 @@
                   <span class="glyphicon glyphicon-trash"></span>
                 </button>
                 </form>
-                <p>{{ photo.number_on_image}}</p>
+                <p>Number: {{ photo.number_on_image}}</p>
                 <button type="submit" class="btn btn-primary" id="edit_button" onclick="openEdit({{forloop.parentloop.counter}}, {{forloop.counter}})">
                   <span class="glyphicon glyphicon-edit"></span></button>
               </div>
 
-                  <p>{{ photo.species_id }}</p>
+                  <p>Species: {{ photo.species_id }}</p>
 
                   <div class="edit" id="display{{forloop.parentloop.counter}}_{{forloop.counter}}" style="display: none;">
                   <form method="post" action="{% url 'uploadImage' %}">
@@ -93,6 +94,7 @@
                    </div>
                    {% endfor %}
                   </div>
+                </div>
                 </div>
                 {% endfor %}
             </div>
@@ -122,4 +124,3 @@
   </script>
 
 {% endblock %}
-

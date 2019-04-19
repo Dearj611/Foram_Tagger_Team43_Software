@@ -38,12 +38,13 @@ class BasicUploadView(View):
         else:
             return render(self.request, 'upload/imgUpload.html')
 
+
     def post(self, request):
         if 'edit_img_id' in request.POST: # editing the tags
             try:
                 corrected_species = Species.objects.get(name=request.POST['species'])
             except Species.DoesNotExist:
-                corrected_species = Species(name=request.POST['species'], total=1)
+                corrected_species = Species(name=request.POST['species'])
             corrected_species.save()
             Img.objects.filter(pk=request.POST['edit_img_id']).update(species=corrected_species)
             url = request.POST['original_url']

@@ -42,7 +42,7 @@ def get_boxes(img, val):
     img = pre_processing(img)
     threshold = val
     canny_output = cv.Canny(img, threshold, threshold * 2)
-    _, contours, _ = cv.findContours(canny_output, cv.RETR_TREE,
+    contours, _ = cv.findContours(canny_output, cv.RETR_TREE,
                                      cv.CHAIN_APPROX_SIMPLE)
     contours_poly = [None]*len(contours)
     boundRect = [None]*len(contours)
