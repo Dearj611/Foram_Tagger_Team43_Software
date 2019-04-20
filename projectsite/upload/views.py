@@ -27,6 +27,7 @@ class BasicUploadView(View):
         else:
             return render(self.request, 'upload/imgUpload.html')
 
+
     def post(self, request):
         if 'edit_img_id' in request.POST: # editing the tags
             Foram.update_species(request.POST['edit_img_id'], request.POST['species'])
