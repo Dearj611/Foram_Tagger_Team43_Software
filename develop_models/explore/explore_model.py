@@ -146,8 +146,16 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=25):
 
 def create_model(model_type, classes, lr):
     criteria = {}
-    if model_type == 'resnet':
+    if model_type == 'resnet18':
         model = models.resnet18(pretrained=True)
+        num_ftrs = model.fc.in_features
+        model.fc = nn.Linear(num_ftrs, len(classes)) # resets finaly layer
+        criterion = nn.CrossEntropyLoss()
+        optimizer = optim.SGD(model.parameters(), lr=lr, momentum=0.9)
+        exp_lr_scheduler = lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
+
+    if model_type == 'resnet34':
+        model = models.resnet34(pretrained=True)
         num_ftrs = model.fc.in_features
         model.fc = nn.Linear(num_ftrs, len(classes)) # resets finaly layer
         criterion = nn.CrossEntropyLoss()
@@ -246,7 +254,7 @@ for num, arr in enumerate(arrangement):
         dataset_sizes = {x: len(image_datasets[x]) for x in ['train', 'val', 'test']}
         classes = image_datasets['train'].labels
         for lr in all_lr:
-            model, _ = create_model('resnet', classes, lr)    # training starts
+            model, _ = create_model('resnet34', classes, lr)    # training starts
             checkpoint = {
                 'idx_to_class': model.idx_to_class,
             }
