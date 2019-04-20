@@ -165,7 +165,7 @@ def create_model(model_type, classes):
         num_ftrs = model.fc.in_features
         model.fc = nn.Linear(num_ftrs, len(classes)) # resets finaly layer
         criterion = nn.CrossEntropyLoss()
-        optimizer = optim.SGD(model.parameters(), lr=lr, momentum=0.9)
+        optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
         exp_lr_scheduler = lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
 
     if model_type == 'resnet18_partial_2':
@@ -177,7 +177,7 @@ def create_model(model_type, classes):
         num_ftrs = model.fc.in_features
         model.fc = nn.Linear(num_ftrs, len(classes)) # resets finaly layer
         criterion = nn.CrossEntropyLoss()
-        optimizer = optim.SGD(model.parameters(), lr=lr, momentum=0.9)
+        optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
         exp_lr_scheduler = lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
 
     if train_on_gpu:
@@ -239,7 +239,6 @@ data_dir = '../training-images'
 image_datasets = {}
 accuracy = []
 arrangement =  [[0,1,2,3], [1,2,3,0], [2,3,1,0], [3,0,1,2]]
-# arrangement = [[2,3,1,0]]
 for num, arr in enumerate(arrangement):
     order = {}
     with tempfile.TemporaryDirectory() as dirpath:
