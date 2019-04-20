@@ -237,7 +237,7 @@ def overall_accuracy(model, test_loader):
 
 data_dir = '../training-images'
 image_datasets = {}
-accuracy = []
+record = []
 arrangement =  [[0,1,2,3], [1,2,3,0], [2,3,1,0], [3,0,1,2]]
 for num, arr in enumerate(arrangement):
     order = {}
@@ -288,8 +288,8 @@ for num, arr in enumerate(arrangement):
         # torch.save(model.state_dict(), './resnet18{i}.pth'.format(i=num))     # save model here
         # print('saved model to' + 'resnet18-{i}.pth'.format(i=num))
         acc = overall_accuracy(model, dataloaders['test'])
-        accuracy.append(acc)
-        print('accuracy is:', acc)
+        record.append(acc)
+        print('overall accuracy is:', acc)
 
 
 for num, arr in enumerate(arrangement):
@@ -341,5 +341,5 @@ for num, arr in enumerate(arrangement):
         # torch.save(model.state_dict(), './resnet18{i}.pth'.format(i=num))     # save model here
         # print('saved model to' + 'resnet18-{i}.pth'.format(i=num))
         acc = overall_accuracy(model, dataloaders['test'])
-        accuracy.append(acc)
-        print('accuracy is:', acc)
+        record.append(acc)
+        print('overall accuracy is:', acc)
