@@ -53,3 +53,7 @@ envvar.txt
 allstaticfiles/
 httpd.conf
 azureml-models/
+
+# develop_models
+*.csv#
+*.ipynb

@@ -261,15 +261,6 @@ def train_better(model,
 
 def create_model(model_type, classes):
     criteria = {}
-    if model_type == 'resnet':
-        model = models.resnet18(pretrained=True)
-        num_ftrs = model.fc.in_features
-        model.fc = nn.Linear(num_ftrs, len(classes)) # resets finaly layer
-        model = model.to(device)
-        criterion = nn.CrossEntropyLoss()
-        optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
-        exp_lr_scheduler = lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
-        
     if model_type == 'vgg':
         model = models.vgg16(pretrained=True)
         for param in model.parameters():    # freeze all layers
