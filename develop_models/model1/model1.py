@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 # License: BSD
 # Author: Sasank Chilamkurthy
-
+# This model performs k-crossfold validation on 4 sets
+# It computes the accuracy on those models
+# It saves the stat_dict and histories of those 4 models
 from __future__ import print_function, division
 
 import torch
@@ -24,7 +26,6 @@ print(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from load_data import ForamDataSet
 plt.ion()   # interactive mode
 train_on_gpu = torch.cuda.is_available()
-save_file_name = 'vgg16-transfer-4.pt'
 
 # Whether to train on a gpu
 train_on_gpu = cuda.is_available()
@@ -244,7 +245,6 @@ for num, arr in enumerate(arrangement):
         classes = image_datasets['train'].labels
         model, history = create_model('resnet', classes)    # training starts
         history.to_csv('resnet{i}.csv'.format(i=num))
-        # history.to_csv('resnet.csv'.format(i=num))
         checkpoint = {
             'idx_to_class': model.idx_to_class,
         }
@@ -261,9 +261,8 @@ for num, arr in enumerate(arrangement):
             checkpoint['optimizer_state_dict'] = model.optimizer.state_dict()
         except Exception as e:
             print(str(e))
-        # Save the data to the path
         # torch.save(checkpoint, 'resnet18-{i}.pth'.format(i=num))
-        torch.save(model.state_dict(), './resnet18.pth')
+        torch.save(model.state_dict(), './resnet18{i}.pth'.format(i=num))     # save model here
         print('saved model to' + 'resnet18-{i}.pth'.format(i=num))
         print('accuracy is:', overall_accuracy(model, dataloaders['test']))
 
