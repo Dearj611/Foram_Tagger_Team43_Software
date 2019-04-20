@@ -26,6 +26,7 @@ def draw_on_image(img, boxes):
 
 
 def pre_processing(img):
+    img = img.copy()
     gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
     blurred = cv.GaussianBlur(gray, (5, 5), 0)
     thresh = cv.threshold(blurred, 60, 255, cv.THRESH_BINARY)[1]

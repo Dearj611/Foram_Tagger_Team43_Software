@@ -4,9 +4,8 @@ from upload.forms import ImageUploadForm
 from django.http import JsonResponse
 from django.views import View
 from common.segmentation import Foram
-from azure.storage.blob import BlockBlobService
-import os
 import tempfile
+
 
 class BasicUploadView(View):
     def get(self, request):
@@ -24,13 +23,6 @@ class BasicUploadView(View):
                     c.custom_url = c.imgLocation.url[1:]
                     temp_list.append(c)
                 photos_list.append(temp_list)
-                # tag = True
-                # try:
-                #     img = Img.objects.get(imgLocation=imgLocation)
-                # except Img.DoesNotExist:
-                #     tag = False
-                # if tag == True:
-                    # photos_list.append(img)
             return render(self.request, 'upload/imgUpload.html', {'photos': photos_list, 'parents': parent_list})
         else:
             return render(self.request, 'upload/imgUpload.html')

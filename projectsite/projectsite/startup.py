@@ -1,4 +1,4 @@
-
+# The model is made global so that it can later be used in the django app
 import os
 from azureml.core.model import Model
 from azureml.core import Workspace

@@ -45,6 +45,9 @@ git commit -m "merged <merge-branch>"
 If you want to modify the latest commit
 git reset HEAD^
 
+watch logs in real time
+tail -f log_file
+
 from importlib import reload
 
 Img.objects.values_list('species', flat=True).distinct()
