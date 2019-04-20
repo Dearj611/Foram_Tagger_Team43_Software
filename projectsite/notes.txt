@@ -86,8 +86,8 @@ Get info on which process is using port 80
 sudo netstat -nlp | grep :80
 Gives you info about your apache2
 apache2ctl -V
-Change file owner
-chmod :<group> <filename>
+Change file and group owner
+chown user:group filename
 
 Record time taken for segmentation
 have an export images function on the search page
@@ -111,3 +111,9 @@ crassaformis:0
 elongatus:1
 hexagonus:2
 
+sudo -E ../venv/bin/python manage.py runmodwsgi --setup-only --port=80 \
+    --user www-data --group www-data \
+    --server-root=/etc/mod_wsgi-express-80
+
+chmod -R 774 azureml-models
+chown -R camelcars:www-data azureml-models 

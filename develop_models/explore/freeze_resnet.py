@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 # License: BSD
 # Author: Sasank Chilamkurthy
-# This model tunes the learning rate of resnet and explores how this affects accuracy
+# This model performs k-crossfold validation on 4 sets
+# It computes the accuracy on those models
+# It saves the stat_dict and histories of those 4 models
 from __future__ import print_function, division
 
 import torch
@@ -144,28 +146,32 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=25):
     return model, history
 
 
-def create_model(model_type, classes, lr):
+def create_model(model_type, classes):
     criteria = {}
-    if model_type == 'resnet18':
+    if model_type == 'resnet':
         model = models.resnet18(pretrained=True)
         num_ftrs = model.fc.in_features
         model.fc = nn.Linear(num_ftrs, len(classes)) # resets finaly layer
         criterion = nn.CrossEntropyLoss()
-        optimizer = optim.SGD(model.parameters(), lr=lr, momentum=0.9)
-        exp_lr_scheduler = lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
-
-    if model_type == 'resnet34':
-        model = models.resnet34(pretrained=True)
-        num_ftrs = model.fc.in_features
-        model.fc = nn.Linear(num_ftrs, len(classes)) # resets finaly layer
-        criterion = nn.CrossEntropyLoss()
-        optimizer = optim.SGD(model.parameters(), lr=lr, momentum=0.9)
+        optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
         exp_lr_scheduler = lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
 
     if model_type == 'resnet18_partial':
         model = models.resnet18(pretrained=True)
         for param in model.parameters():    # unfreeeze the 4th and 5th layers
             if 512 in param.shape:
+                break
+            param.requires_grad = False
+        num_ftrs = model.fc.in_features
+        model.fc = nn.Linear(num_ftrs, len(classes)) # resets finaly layer
+        criterion = nn.CrossEntropyLoss()
+        optimizer = optim.SGD(model.parameters(), lr=lr, momentum=0.9)
+        exp_lr_scheduler = lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
+
+    if model_type == 'resnet18_partial_2':
+        model = models.resnet18(pretrained=True)
+        for param in model.parameters():    # unfreeeze the 4th and 5th layers
+            if 256 in param.shape:
                 break
             param.requires_grad = False
         num_ftrs = model.fc.in_features
@@ -231,13 +237,9 @@ def overall_accuracy(model, test_loader):
 
 data_dir = '../training-images'
 image_datasets = {}
-all_lr = [0.0005+(0.0001*i) for i in range(1,11)] # learning rates to test
-# all_lr += [0.001*i for i in range(1,6)]
-# all_lr += [0.01*i for i in range(1,6)]
-# all_lr += [0.1*i for i in range(1,6)]
-
-record = []
-arrangement = [[2,3,1,0]]
+accuracy = []
+arrangement =  [[0,1,2,3], [1,2,3,0], [2,3,1,0], [3,0,1,2]]
+# arrangement = [[2,3,1,0]]
 for num, arr in enumerate(arrangement):
     order = {}
     with tempfile.TemporaryDirectory() as dirpath:
@@ -265,30 +267,80 @@ for num, arr in enumerate(arrangement):
                        for x in ['train', 'val', 'test']}
         dataset_sizes = {x: len(image_datasets[x]) for x in ['train', 'val', 'test']}
         classes = image_datasets['train'].labels
-        for lr in all_lr:
-            model, _ = create_model('resnet34', classes, lr)    # training starts
-            checkpoint = {
-                'idx_to_class': model.idx_to_class,
-            }
-            if multi_gpu:
-                checkpoint['classifier'] = model.fc
-                checkpoint['state_dict'] = model.module.state_dict()
-            else:
-                checkpoint['classifier'] = model.fc
-                checkpoint['state_dict'] = model.state_dict()
+        model, history = create_model('resnet18_partial', classes)    # training starts
+        # history.to_csv('resnet{i}.csv'.format(i=num))
+        checkpoint = {
+            'idx_to_class': model.idx_to_class,
+        }
+        if multi_gpu:
+            checkpoint['classifier'] = model.fc
+            checkpoint['state_dict'] = model.module.state_dict()
+        else:
+            checkpoint['classifier'] = model.fc
+            checkpoint['state_dict'] = model.state_dict()
 
-            # Add the optimizer
-            try:
-                checkpoint['optimizer'] = model.optimizer
-                checkpoint['optimizer_state_dict'] = model.optimizer.state_dict()
-            except Exception as e:
-                print(str(e))
-            # torch.save(model.state_dict(), './resnet18{i}.pth'.format(i=num))     # save model here
-            acc = overall_accuracy(model, dataloaders['test'])
-            print('accuracy is:', acc)
-            record.append([lr, acc])
+        # Add the optimizer
+        try:
+            checkpoint['optimizer'] = model.optimizer
+            checkpoint['optimizer_state_dict'] = model.optimizer.state_dict()
+        except Exception as e:
+            print(str(e))
+        # torch.save(checkpoint, 'resnet18-{i}.pth'.format(i=num))
+        # torch.save(model.state_dict(), './resnet18{i}.pth'.format(i=num))     # save model here
+        # print('saved model to' + 'resnet18-{i}.pth'.format(i=num))
+        acc = overall_accuracy(model, dataloaders['test'])
+        accuracy.append(acc)
+        print('accuracy is:', acc)
 
-record = pd.DataFrame(
-    record,
-    columns=['learning_rate', 'overall_accuracy'])
-record.to_csv('./record_34.csv')
+
+for num, arr in enumerate(arrangement):
+    order = {}
+    with tempfile.TemporaryDirectory() as dirpath:
+        order['test'] = arr[0]
+        order['val'] = arr[1]
+        order['train'] = arr[2:]
+        if len(order['train']) > 1:
+            temp_frame = pd.concat([pd.read_csv('../data-csv/file{num}.csv'.format(num=i))
+                                    for i in order['train']])
+            temp_frame.to_csv(os.path.join(dirpath, 'train.csv'), encoding='utf-8', index=False)
+        image_datasets['train'] = ForamDataSet(csv_file=os.path.join(dirpath, 'train.csv'),
+                                               root_dir=data_dir,
+                                               master_file='../data-csv/file0.csv',
+                                               transform=data_transforms['train'])
+        image_datasets['val'] = ForamDataSet(csv_file='../data-csv/file{i}.csv'.format(i=order['val']),
+                                             root_dir=data_dir,
+                                             master_file='../data-csv/file0.csv',
+                                             transform=data_transforms['val'])
+        image_datasets['test'] = ForamDataSet(csv_file='../data-csv/file{i}.csv'.format(i=order['test']),
+                                              root_dir=data_dir,
+                                              master_file='../data-csv/file0.csv',
+                                              transform=data_transforms['test'])                                     
+        dataloaders = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size=4,
+                                                      shuffle=True, num_workers=4)
+                       for x in ['train', 'val', 'test']}
+        dataset_sizes = {x: len(image_datasets[x]) for x in ['train', 'val', 'test']}
+        classes = image_datasets['train'].labels
+        model, history = create_model('resnet18_partial_2', classes)    # training starts
+        # history.to_csv('resnet{i}.csv'.format(i=num))
+        checkpoint = {
+            'idx_to_class': model.idx_to_class,
+        }
+        if multi_gpu:
+            checkpoint['classifier'] = model.fc
+            checkpoint['state_dict'] = model.module.state_dict()
+        else:
+            checkpoint['classifier'] = model.fc
+            checkpoint['state_dict'] = model.state_dict()
+
+        # Add the optimizer
+        try:
+            checkpoint['optimizer'] = model.optimizer
+            checkpoint['optimizer_state_dict'] = model.optimizer.state_dict()
+        except Exception as e:
+            print(str(e))
+        # torch.save(checkpoint, 'resnet18-{i}.pth'.format(i=num))
+        # torch.save(model.state_dict(), './resnet18{i}.pth'.format(i=num))     # save model here
+        # print('saved model to' + 'resnet18-{i}.pth'.format(i=num))
+        acc = overall_accuracy(model, dataloaders['test'])
+        accuracy.append(acc)
+        print('accuracy is:', acc)
