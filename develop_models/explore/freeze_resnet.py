@@ -343,3 +343,5 @@ for num, arr in enumerate(arrangement):
         acc = overall_accuracy(model, dataloaders['test'])
         record.append(acc)
         print('overall accuracy is:', acc)
+
+print(record)
