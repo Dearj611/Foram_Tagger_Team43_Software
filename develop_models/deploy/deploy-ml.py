@@ -56,6 +56,10 @@ service = Webservice.deploy_from_image(deployment_config=aciconfig,
                                        name='foram-tagger-inference',
                                        workspace=ws)
 service.wait_for_deployment(show_output=True)
-foramworacrxwzoomvt.azurecr.io/foramimage:1
-foramworacrxwzoomvt.azurecr.io/foramimage:2
-service.
+
+def deploy_model(path, model_name):
+    ws = Workspace.get(name='foram-workspace', subscription_id='d90d34f0-1175-4d80-a89e-b74e16c0e31b')
+    model = Model.register(model_path=path,
+                       model_name=model_name,
+                       description="inference",
+                       workspace=ws)

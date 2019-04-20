@@ -244,7 +244,7 @@ for num, arr in enumerate(arrangement):
         dataset_sizes = {x: len(image_datasets[x]) for x in ['train', 'val', 'test']}
         classes = image_datasets['train'].labels
         model, history = create_model('resnet', classes)    # training starts
-        history.to_csv('history-{i}.csv'.format(i=num))
+        history.to_csv('resnet{i}.csv'.format(i=num))
         checkpoint = {
             'idx_to_class': model.idx_to_class,
         }
@@ -262,9 +262,9 @@ for num, arr in enumerate(arrangement):
         except Exception as e:
             print(str(e))
         # torch.save(checkpoint, 'resnet18-{i}.pth'.format(i=num))
-        torch.save(model.state_dict(), './resnet18-{i}.pth'.format(i=num))     # save model here
+        torch.save(model.state_dict(), './resnet18{i}.pth'.format(i=num))     # save model here
         print('saved model to' + 'resnet18-{i}.pth'.format(i=num))
         print('accuracy is:', overall_accuracy(model, dataloaders['test']))
 
 
-# 85.78, 86.458, 85.719 86.458
+# 85.677, 84.896, 88.802, 87.663

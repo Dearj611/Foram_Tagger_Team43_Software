@@ -56,4 +56,5 @@ azureml-models/
 
 # develop_models
 *.csv#
+*.csv
 *.ipynb
