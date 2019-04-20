@@ -162,6 +162,18 @@ def create_model(model_type, classes, lr):
         optimizer = optim.SGD(model.parameters(), lr=lr, momentum=0.9)
         exp_lr_scheduler = lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
 
+    if model_type == 'resnet18_partial':
+        model = models.resnet18(pretrained=True)
+        for param in model.parameters():    # unfreeeze the 4th and 5th layers
+            if 512 in param.shape:
+                break
+            param.requires_grad = False
+        num_ftrs = model.fc.in_features
+        model.fc = nn.Linear(num_ftrs, len(classes)) # resets finaly layer
+        criterion = nn.CrossEntropyLoss()
+        optimizer = optim.SGD(model.parameters(), lr=lr, momentum=0.9)
+        exp_lr_scheduler = lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
+
     if train_on_gpu:
         model = model.to(device)
 
@@ -219,7 +231,7 @@ def overall_accuracy(model, test_loader):
 
 data_dir = '../training-images'
 image_datasets = {}
-all_lr = [0.0001*i for i in range(1,11)] # learning rates to test
+all_lr = [0.0005+(0.0001*i) for i in range(1,11)] # learning rates to test
 # all_lr += [0.001*i for i in range(1,6)]
 # all_lr += [0.01*i for i in range(1,6)]
 # all_lr += [0.1*i for i in range(1,6)]
@@ -254,7 +266,7 @@ for num, arr in enumerate(arrangement):
         dataset_sizes = {x: len(image_datasets[x]) for x in ['train', 'val', 'test']}
         classes = image_datasets['train'].labels
         for lr in all_lr:
-            model, _ = create_model('resnet34', classes, lr)    # training starts
+            model, _ = create_model('resnet18_partial', classes, lr)    # training starts
             checkpoint = {
                 'idx_to_class': model.idx_to_class,
             }
