@@ -291,4 +291,4 @@ for num, arr in enumerate(arrangement):
 record = pd.DataFrame(
     record,
     columns=['learning_rate', 'overall_accuracy'])
-record.to_csv('./record1.csv')
+record.to_csv('./record_partial.csv')
