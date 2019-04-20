@@ -111,3 +111,7 @@ crassaformis:0
 elongatus:1
 hexagonus:2
 
+sudo -E ../venv/bin/python manage.py runmodwsgi --setup-only --port=80 \ --user www-data --group www-data \ --server-root=/etc/mod_wsgi-express-80
+sudo -E ../venv/bin/python manage.py runmodwsgi --setup-only --port=80 \
+    --user www-data --group www-data \
+    --server-root=/etc/mod_wsgi-express-80
