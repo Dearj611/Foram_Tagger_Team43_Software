@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 # License: BSD
 # Author: Sasank Chilamkurthy
-
+# This model tunes the learning rate of resnet and explores how this affects accuracy
 from __future__ import print_function, division
 
 import torch
 import torch.nn as nn
 from torch import optim, cuda
 from torch.optim import lr_scheduler
+import numpy as np
 from torchvision import datasets, models, transforms
 import matplotlib.pyplot as plt
 import time
@@ -23,7 +24,6 @@ print(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from load_data import ForamDataSet
 plt.ion()   # interactive mode
 train_on_gpu = torch.cuda.is_available()
-save_file_name = 'vgg16-transfer-4.pt'
 
 # Whether to train on a gpu
 train_on_gpu = cuda.is_available()
@@ -88,7 +88,6 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=25):
         # Each epoch has a training and validation phase
         for phase in ['train', 'val']:
             if phase == 'train':
-                print()
                 scheduler.step()
                 model.train()  # Set model to training mode
             else:
@@ -101,7 +100,7 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=25):
             for inputs, labels in dataloaders[phase]:
                 inputs = inputs.to(device)
                 labels = labels.to(device)
-                # zero the parameter gradients
+                # zero the parameter gradients. what and why do we need this
                 optimizer.zero_grad()
 
                 # forward
@@ -109,9 +108,7 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=25):
                 with torch.set_grad_enabled(phase == 'train'):
                     outputs = model(inputs)
                     _, preds = torch.max(outputs, 1)
-                    # print(outputs)
                     loss = criterion(outputs, labels)
-                    print('phase:{p}, loss:{l}'.format(p=phase, l=loss))                    
 
                     # backward + optimize only if in training phase
                     if phase == 'train':
@@ -136,7 +133,6 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=25):
     time_elapsed = time.time() - since
     print('Training complete in {:.0f}m {:.0f}s'.format(
         time_elapsed // 60, time_elapsed % 60))
-    print('Time per epoch: {t}'.format(t=time_elapsed/num_epochs))
     print('Best val Acc: {:4f}'.format(best_acc))
 
     # load best model weights
@@ -148,16 +144,15 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=25):
     return model, history
 
 
-def create_model(model_type, classes):
+def create_model(model_type, classes, lr):
     criteria = {}
     if model_type == 'resnet':
         model = models.resnet18(pretrained=True)
         num_ftrs = model.fc.in_features
         model.fc = nn.Linear(num_ftrs, len(classes)) # resets finaly layer
         criterion = nn.CrossEntropyLoss()
-        optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
+        optimizer = optim.SGD(model.parameters(), lr=lr, momentum=0.9)
         exp_lr_scheduler = lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
-        print(optimizer.)
 
     if train_on_gpu:
         model = model.to(device)
@@ -216,8 +211,11 @@ def overall_accuracy(model, test_loader):
 
 data_dir = '../training-images'
 image_datasets = {}
+all_lr = [0.001*i for i in range(1,6)] # learning rates to test
+all_lr += [0.01*i for i in range(1,6)]
+all_lr += [0.1*i for i in range(1,6)]
 
-# arrangement =  [[0,1,2,3], [1,2,3,0], [2,3,1,0], [3,0,1,2]]
+record = []
 arrangement = [[2,3,1,0]]
 for num, arr in enumerate(arrangement):
     order = {}
@@ -246,8 +244,30 @@ for num, arr in enumerate(arrangement):
                        for x in ['train', 'val', 'test']}
         dataset_sizes = {x: len(image_datasets[x]) for x in ['train', 'val', 'test']}
         classes = image_datasets['train'].labels
-        model, history = create_model('resnet', classes)    # training starts
-        print('accuracy is:', overall_accuracy(model, dataloaders['test']))
+        for lr in all_lr:
+            model, _ = create_model('resnet', classes, lr)    # training starts
+            checkpoint = {
+                'idx_to_class': model.idx_to_class,
+            }
+            if multi_gpu:
+                checkpoint['classifier'] = model.fc
+                checkpoint['state_dict'] = model.module.state_dict()
+            else:
+                checkpoint['classifier'] = model.fc
+                checkpoint['state_dict'] = model.state_dict()
 
+            # Add the optimizer
+            try:
+                checkpoint['optimizer'] = model.optimizer
+                checkpoint['optimizer_state_dict'] = model.optimizer.state_dict()
+            except Exception as e:
+                print(str(e))
+            # torch.save(model.state_dict(), './resnet18{i}.pth'.format(i=num))     # save model here
+            acc = overall_accuracy(model, dataloaders['test'])
+            print('accuracy is:', acc)
+            record.append([lr, acc])
 
-# 85.677, 84.896, 88.802, 87.663
+record = pd.DataFrame(
+    record,
+    columns=['learning_rate', 'overall_accuracy'])
+record.to_csv('./record.csv')
