@@ -231,7 +231,7 @@ def overall_accuracy(model, test_loader):
 
 data_dir = '../training-images'
 image_datasets = {}
-all_lr = [0.0005+(0.0001*i) for i in range(1,11)] # learning rates to test
+all_lr = [0.001+(0.0002*i) for i in range(1,11)] # learning rates to test
 # all_lr += [0.001*i for i in range(1,6)]
 # all_lr += [0.01*i for i in range(1,6)]
 # all_lr += [0.1*i for i in range(1,6)]
@@ -291,4 +291,4 @@ for num, arr in enumerate(arrangement):
 record = pd.DataFrame(
     record,
     columns=['learning_rate', 'overall_accuracy'])
-record.to_csv('./record_34.csv')
+record.to_csv('./record_3.csv')
