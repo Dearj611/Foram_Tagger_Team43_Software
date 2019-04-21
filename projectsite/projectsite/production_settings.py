@@ -43,9 +43,18 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_extensions',
+    'django_nose',
     'mod_wsgi.server',
     'home',
 ]
+
+TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
+
+# Tell nose to measure coverage on those apps
+# NOSE_ARGS = [
+#     '--with-coverage',
+#     '--cover-package=search,upload',
+# ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -87,7 +96,7 @@ WSGI_APPLICATION = 'projectsite.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'CONN_MAX_AGE': None,
+        'CONN_MAX_AGE': 3600,
         'NAME': 'django',
         'USER': os.environ['DB_USER'],
         'PASSWORD': os.environ['DB_PASSWORD'],
@@ -138,8 +147,8 @@ MEDIA_URL = os.getenv('AZURE_BLOB_URL')
 # DEFAULT_FILE_STORAGE = 'custom_storage.custom_azure.ImageAzureStorage'
 
 # Allows me to see stdout
-NOSE_ARGS = ['--nocapture',
-             '--nologcapture',]
+# NOSE_ARGS = ['--nocapture',
+#              '--nologcapture',]
 
 STATICFILES_STORAGE = 'storages.backends.azure_storage.AzureStorage'
 AZURE_ACCOUNT_NAME = os.getenv('AZ_STORAGE_ACCOUNT_NAME')

@@ -73,9 +73,8 @@ def filter_boxes(boxes):
     return to_return
 '''
 Much of what segmentation does is the same as the processing script. However I
-created a class here because the functions above are randomly processing stuff
-then randomly returning certain things. It is much better to implement a class,
-so that I can keep track of the state. Also the state is heavily used in the views
+created a class here because I needed to keep track of its state, which is
+used in the views
 '''
 class Foram:
     '''
