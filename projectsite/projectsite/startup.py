@@ -18,7 +18,7 @@ def run():
     ws = Workspace.get(name='foram-workspace',
                        subscription_id='d90d34f0-1175-4d80-a89e-b74e16c0e31b',
                        auth=svc_pr)
-    model_path = Model.get_model_path('resnet18', _workspace=ws)
+    model_path = Model.get_model_path('resnet_cv', _workspace=ws)
     model = load_checkpoint(model_path)
 
 

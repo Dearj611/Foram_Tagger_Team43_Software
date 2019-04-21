@@ -2,7 +2,7 @@ from django.shortcuts import render
 from upload.models import Img
 from django.http import HttpResponseRedirect
 from django.http import HttpResponse
-
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 def search(request):
     if 'search' in request.GET:
@@ -15,5 +15,8 @@ def search(request):
         for foram in result:
             imgs.append(foram)
     else:
-        imgs = Img.objects.all()
-    return render(request,"search/searchImg.html",{"forams":imgs})
+        foram_list = Img.objects.all()
+        page = request.GET.get('page', 1)
+        paginator = Paginator(foram_list, 20)
+        forams = paginator.page(page)
+    return render(request,"search/searchImg.html",{"forams": forams})
