@@ -20,13 +20,13 @@
       <div class="panel panel-default">
         <div class="panel-body">
 
-          <form method="post" action="{% url 'clear_database' %}">
+          {% comment %} <form method="post" action="{% url 'clear_database' %}">
             {% csrf_token %}
             <input type="hidden" name="next" value="{{ request.path }}">
             <button type="submit" class="btn btn-danger pull-right">
               <span class="glyphicon glyphicon-trash"></span> Clear Database
             </button>
-          </form>
+          </form> {% endcomment %}
 
           <div style = "text-align:center">
           <button type="button" class="btn btn-primary js-upload-photos">
