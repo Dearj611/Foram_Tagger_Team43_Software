@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-
+{% load custom_tag %}
 {% block title %}Search {% endblock %}
 
 {% block content %}
@@ -40,17 +40,36 @@
 
       {% if forams %}
       <div class="row" id="portfolio-wrapper">
-          {% for foram in forams %}
-          <div class="col-lg-3 col-md-6 portfolio-item">
-              <img src="{{ foram.imgLocation.url|slice:"1:" }}" style="width:100%" onclick="openModal();currentSlide({{forloop.counter}})" class="hover-shadow cursor"><br/>
-              <div class="details">
-                <h4>{{ foram.species_id }}</h4>
-                <span>Description</span>
-              </div>
-            </a>
-          </div>
-          {% endfor %}
+        {% for foram in forams %}
+        <div class="col-lg-3 col-md-6 portfolio-item">
+            <img src="{{ foram.imgLocation.url|slice:"1:" }}" style="width:100%" onclick="openModal();currentSlide({{forloop.counter}})" class="hover-shadow cursor"><br/>
+            <div class="details">
+              <h4>{{ foram.species_id }}</h4>
+              <span>Description</span>
             </div>
+          </a>
+        </div>
+        {% endfor %}
+        <ul class="pagination pagination-lg">
+          {% if forams.has_previous %}
+            <li class="page-item"><a class="page-link" href="?page={{ forams.previous_page_number }}">Previous</a></li>
+          {% else %}
+            <li class="page-item disabled"><span class="page-link">Previous</span></li>
+          {% endif %}
+          {% for i in forams.paginator.page_range|boundary:forams.number %}
+            {% if forams.number == i %}
+              <li class="page-item active"><a class="page-link" href="#">{{ i }} <span class="sr-only">(current)</span></a></li>
+            {% else %}
+              <li class="page-item"><a class="page-link" href="?page={{ i }}">{{ i }}</a></li>
+            {% endif %}
+          {% endfor %}
+          {% if forams.has_next %}
+           <li class="page-item"><a class="page-link" href="?page={{ forams.next_page_number }}">Next</a></li>
+          {% else %}
+            <li class="page-item disabled"><span class="page-link">Next</span></li>
+          {% endif %}
+        </ul>
+      </div>
    {% endif %}
 
 

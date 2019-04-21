@@ -54,6 +54,9 @@ allstaticfiles/
 httpd.conf
 azureml-models/
 
+# develop_models
+*.csv#
 *.csv
-*.zip
 *.ipynb
+*.zip
+notes.txt
