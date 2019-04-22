@@ -19,11 +19,12 @@ import os
 import copy
 import pandas as pd
 import cv2 as cv
-from PIL import Image
-import load_data
-from load_data import ForamDataSet
 from importlib import reload
 from timeit import default_timer as timer
+from PIL import Image
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from load_data import ForamDataSet
+
 
 plt.ion()   # interactive mode
 train_on_gpu = torch.cuda.is_available()
