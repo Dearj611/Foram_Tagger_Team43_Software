@@ -158,7 +158,7 @@ def create_model(model_type, classes):
 
     if model_type == 'resnet18_partial':
         model = models.resnet18(pretrained=True)
-        for param in model.parameters():    # unfreeeze the 4th and 5th layers
+        for param in model.parameters():
             if 512 in param.shape:
                 break
             param.requires_grad = False
@@ -170,7 +170,7 @@ def create_model(model_type, classes):
 
     if model_type == 'resnet18_partial_2':
         model = models.resnet18(pretrained=True)
-        for param in model.parameters():    # unfreeeze the 4th and 5th layers
+        for param in model.parameters():
             if 256 in param.shape:
                 break
             param.requires_grad = False
@@ -182,8 +182,16 @@ def create_model(model_type, classes):
     
     if model_type == 'resnet18_freeze_all':
         model = models.resnet18(pretrained=True)
-        for param in model.parameters():    # unfreeeze the 4th and 5th layers
+        for param in model.parameters():
             param.requires_grad = False
+        num_ftrs = model.fc.in_features
+        model.fc = nn.Linear(num_ftrs, len(classes)) # resets finaly layer
+        criterion = nn.CrossEntropyLoss()
+        optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
+        exp_lr_scheduler = lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
+    
+    if model_type == 'resnet18_untrained':
+        model = models.resnet18(pretrained=False)
         num_ftrs = model.fc.in_features
         model.fc = nn.Linear(num_ftrs, len(classes)) # resets finaly layer
         criterion = nn.CrossEntropyLoss()
@@ -248,6 +256,7 @@ def overall_accuracy(model, test_loader):
 data_dir = '../training-images'
 image_datasets = {}
 record = []
+model_to_use = 'resnet18_untrained'
 arrangement =  [[0,1,2,3], [1,2,3,0], [2,3,1,0], [3,0,1,2]]
 for num, arr in enumerate(arrangement):
     order = {}
@@ -276,7 +285,7 @@ for num, arr in enumerate(arrangement):
                        for x in ['train', 'val', 'test']}
         dataset_sizes = {x: len(image_datasets[x]) for x in ['train', 'val', 'test']}
         classes = image_datasets['train'].labels
-        model, history = create_model('resnet18_freeze_all', classes)    # training starts
+        model, history = create_model(model_to_use, classes)    # training starts
         # history.to_csv('resnet{i}.csv'.format(i=num))
         checkpoint = {
             'idx_to_class': model.idx_to_class,
@@ -305,3 +314,4 @@ print(record)
 
 [85.15625, 85.15625, 86.45833333333333, 84.96732023650524]
 [88.54166666666667, 86.19791666666667, 88.02083333333333, 87.00980392156863]
+[67.1875, 69.53125, 69.79166666666667, 66.25816992217419]
