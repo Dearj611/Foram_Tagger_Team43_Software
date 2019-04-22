@@ -38,8 +38,6 @@ multi_gpu = False
 if train_on_gpu:
     gpu_count = cuda.device_count()
     print('{gpu_count} gpus detected.'.format(gpu_count=gpu_count))
-    if gpu_count > 1:
-        multi_gpu = True
         
 
 data_transforms = {
@@ -93,21 +91,23 @@ data_transforms = {
         transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
     ]),
 }
-
-data_dir = '../media'
+data_dir = '../training-images'
 image_datasets = {}
-image_datasets['train'] = ForamDataSet(csv_file='../train.csv',
-                                       root_dir='../media',
-                                       transform=data_transforms['train'])
-image_datasets['val'] = ForamDataSet(csv_file='../val.csv',
-                                     root_dir='../media',
-                                     transform=data_transforms['val'])
-image_datasets['test'] = ForamDataSet(csv_file='../test.csv',
-                                     root_dir='../media',
-                                     transform=data_transforms['test'])                                     
+image_datasets['train'] = ForamDataSet(csv_file=os.path.join(dirpath, 'train.csv'),
+                                               root_dir=data_dir,
+                                               master_file='../data-csv/file0.csv',
+                                               transform=data_transforms['train'])
+image_datasets['val'] = ForamDataSet(csv_file='../data-csv/file{i}.csv'.format(i=order['val']),
+                                        root_dir=data_dir,
+                                        master_file='../data-csv/file0.csv',
+                                        transform=data_transforms['val'])
+image_datasets['test'] = ForamDataSet(csv_file='../data-csv/file{i}.csv'.format(i=order['test']),
+                                        root_dir=data_dir,
+                                        master_file='../data-csv/file0.csv',
+                                        transform=data_transforms['test'])                                     
 dataloaders = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size=4,
-                                             shuffle=True, num_workers=4)
-              for x in ['train', 'val', 'test']}
+                                                shuffle=True, num_workers=4)
+                for x in ['train', 'val', 'test']}
 dataset_sizes = {x: len(image_datasets[x]) for x in ['train', 'val', 'test']}
 classes = image_datasets['train'].labels
 
@@ -119,6 +119,7 @@ def train_better(model,
           train_loader,
           valid_loader,
           save_file_name,
+          scheduler,
           max_epochs_stop=5,
           n_epochs=20,
           print_every=2):
@@ -169,6 +170,7 @@ def train_better(model,
         valid_acc = 0
 
         # Set to training
+        scheduler.step()
         model.train()
         start = timer()
 
@@ -312,7 +314,7 @@ def train_better(model,
 
 def create_model(model_type):
     criteria = {}
-    if model_type == 'the_first':
+    if model_type == 'resnet':
         model = models.resnet18(pretrained=True)
         num_ftrs = model.fc.in_features
         model.fc = nn.Linear(num_ftrs, len(classes)) # resets finaly layer
@@ -334,7 +336,6 @@ def create_model(model_type):
         criterion = nn.NLLLoss()
         optimizer = optim.Adam(model.parameters())
         
-    summary(model, input_size=(3, 224, 224))
     if train_on_gpu:
         model = model.to('cuda')
 
@@ -346,29 +347,68 @@ def create_model(model_type):
     criteria['train_loader'] = dataloaders['train']
     criteria['valid_loader'] = dataloaders['val']
     criteria['save_file_name'] = save_file_name
+    criteria['scheduler'] = exp_lr_scheduler
     criteria['n_epochs'] = 20
     model.idx_to_class = {num:species for num,species in enumerate(image_datasets['train'].labels)}
     model, history = train_better(**criteria)
     return model, history
 
 
-model, history = create_model('vgg')
+def accuracy(output, target, topk=(1, )):
+    """
+    Compute the topk accuracy(s)
+    target: the correct labelled answer
+    """
+    if train_on_gpu:
+        output = output.to(device)
+        target = target.to(device)
+
+    with torch.no_grad():
+        maxk = max(topk)
+        batch_size = target.size(0)
+
+        # Find the predicted classes and transpose
+        _, pred = output.topk(k=maxk, dim=1, largest=True, sorted=True)
+        pred = pred.t()
+        # Determine predictions equal to the targets
+        correct = pred.eq(target.view(1, -1).expand_as(pred))
+        res = []
+
+        # For each k, find the percentage of correct
+        for k in topk:
+            correct_k = correct[:k].view(-1).float().sum(0, keepdim=True)
+            res.append(correct_k.mul_(100.0 / batch_size).item())
+        return res
+
+
+def overall_accuracy(model, test_loader):
+    model.eval()
+    with torch.no_grad():
+        counter = 0
+        result = 0
+        # Testing loop
+        for data, targets in test_loader:
+            if train_on_gpu:
+                data, targets = data.to(device), targets.to(device)
+            # Raw model output
+            result += accuracy(model(data), targets)[0]
+            counter += 1
+    return result/counter
+model, history = create_model('resnet')
 history.to_csv('history3.csv')
 checkpoint = {
     'idx_to_class': model.idx_to_class,
     'epochs': model.epochs,
 }
 
-if multi_gpu:
-    checkpoint['classifier'] = model.module.classifier
-    checkpoint['state_dict'] = model.module.state_dict()
-else:
-    checkpoint['classifier'] = model.classifier
-    checkpoint['state_dict'] = model.state_dict()
+checkpoint['classifier'] = model.classifier
+checkpoint['state_dict'] = model.state_dict()
 
 # Add the optimizer
 checkpoint['optimizer'] = model.optimizer
 checkpoint['optimizer_state_dict'] = model.optimizer.state_dict()
 
+acc = overall_accuracy(model, dataloaders['test'])
+print('overall accuracy is:', acc)
 # Save the data to the path
 torch.save(checkpoint, checkpoint_path)
