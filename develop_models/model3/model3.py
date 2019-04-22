@@ -89,34 +89,50 @@ data_transforms = {
 }
 data_dir = '../training-images'
 image_datasets = {}
-arrangement =  [[0,1,2,3], [1,2,3,0], [2,3,1,0], [3,0,1,2]]
-# arrangement = [[2,3,1,0]]
-for num, arr in enumerate(arrangement):
-    order = {}
-    with tempfile.TemporaryDirectory() as dirpath:
-        order['test'] = arr[0]
-        order['val'] = arr[1]
-        order['train'] = arr[2:]
-        if len(order['train']) > 1:
-            temp_frame = pd.concat([pd.read_csv('../data-csv/file{num}.csv'.format(num=i))
-                                    for i in order['train']])
-            temp_frame.to_csv(os.path.join(dirpath, 'train.csv'), encoding='utf-8', index=False)
-        image_datasets['train'] = ForamDataSet(csv_file=os.path.join(dirpath, 'train.csv'),
-                                               root_dir=data_dir,
-                                               master_file='../data-csv/file0.csv',
-                                               transform=data_transforms['train'])
-        image_datasets['val'] = ForamDataSet(csv_file='../data-csv/file{i}.csv'.format(i=order['val']),
-                                             root_dir=data_dir,
-                                             master_file='../data-csv/file0.csv',
-                                             transform=data_transforms['val'])
-        image_datasets['test'] = ForamDataSet(csv_file='../data-csv/file{i}.csv'.format(i=order['test']),
-                                              root_dir=data_dir,
-                                              master_file='../data-csv/file0.csv',
-                                              transform=data_transforms['test'])                                     
-        dataloaders = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size=4,
-                                                      shuffle=True, num_workers=4)
-                       for x in ['train', 'val', 'test']}
-        dataset_sizes = {x: len(image_datasets[x]) for x in ['train', 'val', 'test']}
+arrangement = [[2,3,1,0]]
+# for num, arr in enumerate(arrangement):
+#     order = {}
+#     with tempfile.TemporaryDirectory() as dirpath:
+#         order['test'] = arr[0]
+#         order['val'] = arr[1]
+#         order['train'] = arr[2:]
+#         if len(order['train']) > 1:
+#             temp_frame = pd.concat([pd.read_csv('../data-csv/file{num}.csv'.format(num=i))
+#                                     for i in order['train']])
+#             temp_frame.to_csv(os.path.join(dirpath, 'train.csv'), encoding='utf-8', index=False)
+#         image_datasets['train'] = ForamDataSet(csv_file=os.path.join(dirpath, 'train.csv'),
+#                                                root_dir=data_dir,
+#                                                master_file='../data-csv/file0.csv',
+#                                                transform=data_transforms['train'])
+#         image_datasets['val'] = ForamDataSet(csv_file='../data-csv/file{i}.csv'.format(i=order['val']),
+#                                              root_dir=data_dir,
+#                                              master_file='../data-csv/file0.csv',
+#                                              transform=data_transforms['val'])
+#         image_datasets['test'] = ForamDataSet(csv_file='../data-csv/file{i}.csv'.format(i=order['test']),
+#                                               root_dir=data_dir,
+#                                               master_file='../data-csv/file0.csv',
+#                                               transform=data_transforms['test'])                                     
+#         dataloaders = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size=4,
+#                                                       shuffle=True, num_workers=4)
+#                        for x in ['train', 'val', 'test']}
+#         dataset_sizes = {x: len(image_datasets[x]) for x in ['train', 'val', 'test']}
+
+image_datasets['train'] = ForamDataSet(csv_file='../data-csv/file{i}.csv'.format(i=0),
+                                       root_dir=data_dir,
+                                       master_file='../data-csv/file0.csv',
+                                       transform=data_transforms['train'])
+image_datasets['val'] = ForamDataSet(csv_file='../data-csv/file{i}.csv'.format(i=1),
+                                     root_dir=data_dir,
+                                     master_file='../data-csv/file0.csv',
+                                     transform=data_transforms['val'])
+image_datasets['test'] = ForamDataSet(csv_file='../data-csv/file{i}.csv'.format(i=2),
+                                      root_dir=data_dir,
+                                      master_file='../data-csv/file0.csv',
+                                      transform=data_transforms['test'])                                     
+dataloaders = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size=4,
+                                              shuffle=True, num_workers=4)
+                for x in ['train', 'val', 'test']}
+dataset_sizes = {x: len(image_datasets[x]) for x in ['train', 'val', 'test']}
 classes = image_datasets['train'].labels
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -309,12 +325,12 @@ def train_better(model,
     model.optimizer = optimizer
     # Record overall time and print out stats
     total_time = timer() - overall_start
-    print(
-        '\nBest epoch: {best_epoch} with loss: {valid_loss_min:.2f} and acc: {100 * valid_acc:.2f}%'.format(best_epoch=best_epoch, valid_loss_min=valid_loss_min, valid_acc=valid_acc)
-    )
-    print(
-        '{total_time:.2f} total seconds elapsed. {total_time / (epoch):.2f} seconds per epoch.'.format(total_time=total_time, per_epoch=total_time/epoch)
-    )
+    # print(
+    #     '\nBest epoch: {best_epoch} with loss: {valid_loss_min:.2f} and acc: {100 * valid_acc:.2f}%'.format(best_epoch=best_epoch, valid_loss_min=valid_loss_min, valid_acc=valid_acc)
+    # )
+    # print(
+    #     '{total_time:.2f} total seconds elapsed. {total_time / (epoch):.2f} seconds per epoch.'.format(total_time=total_time, per_epoch=total_time/epoch)
+    # )
     # Format history
     history = pd.DataFrame(
         history,
