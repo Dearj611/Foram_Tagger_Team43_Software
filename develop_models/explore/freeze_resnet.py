@@ -269,7 +269,7 @@ data_dir = '../training-images'
 image_datasets = {}
 record = []
 all_models = ['resnet18_partial', 'resnet18_partial_2', 'resnet18_partial_3']
-for model_to_use in all_models:
+for mod, model_to_use in enumerate(all_models):
     arrangement =  [[0,1,2,3], [1,2,3,0], [2,3,1,0], [3,0,1,2]]
     for num, arr in enumerate(arrangement):
         order = {}
@@ -293,13 +293,13 @@ for model_to_use in all_models:
                                                 root_dir=data_dir,
                                                 master_file='../data-csv/file0.csv',
                                                 transform=data_transforms['test'])                                     
-            dataloaders = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size=32,
+            dataloaders = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size=4,
                                                         shuffle=True, num_workers=4)
                         for x in ['train', 'val', 'test']}
             dataset_sizes = {x: len(image_datasets[x]) for x in ['train', 'val', 'test']}
             classes = image_datasets['train'].labels
             model, history = create_model(model_to_use, classes)    # training starts
-            # history.to_csv('resnet{i}.csv'.format(i=num))
+            history.to_csv('resnet-{x}-{i}.csv'.format(x=mod, i=num))
             checkpoint = {
                 'idx_to_class': model.idx_to_class,
             }
