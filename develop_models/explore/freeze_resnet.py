@@ -192,6 +192,18 @@ def create_model(model_type, classes):
         optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
         exp_lr_scheduler = lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
     
+    if model_type == 'resnet18_partial_3':
+        model = models.resnet18(pretrained=True)
+        for param in model.parameters():
+            if 128 in param.shape:
+                break
+            param.requires_grad = False
+        num_ftrs = model.fc.in_features
+        model.fc = nn.Linear(num_ftrs, len(classes)) # resets finaly layer
+        criterion = nn.CrossEntropyLoss()
+        optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
+        exp_lr_scheduler = lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
+
     if model_type == 'resnet18_freeze_all':
         model = models.resnet18(pretrained=True)
         for param in model.parameters():
@@ -325,9 +337,15 @@ for mod, model_to_use in enumerate(all_models):
 
 print(record)
 
+# Model performs way worse when batch-size=32 than when 4
 [85.15625, 85.15625, 86.45833333333333, 84.96732023650524] # partial
 [88.54166666666667, 86.19791666666667, 88.02083333333333, 87.00980392156863] #partial_2
 
 [67.1875, 69.53125, 69.79166666666667, 66.25816992217419] # freeze all
 [49.21875, 52.083333333333336, 45.052083333333336, 49.91830062866211] # untrained
 [37.239583333333336, 42.1875, 34.375, 39.79933107816256] # untrained
+'''
+85.41666666666667, 85.67708333333333, 85.67708333333333, 86.68300651101505 unfreeze fourth layer
+86.97916666666667, 87.5, 89.58333333333333, 87.00980392156863 unfreeze third, fourth layer
+89.32291666666667, 89.0625, 90.10416666666667, 89.70588235294117 unfreeze third, fourth, 2nd layer
+'''

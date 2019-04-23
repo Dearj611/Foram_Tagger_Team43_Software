@@ -428,12 +428,9 @@ checkpoint = {
     'epochs': model.epochs,
 }
 
-checkpoint['classifier'] = model.classifier
 checkpoint['state_dict'] = model.state_dict()
 
 # Add the optimizer
-checkpoint['optimizer'] = model.optimizer
-checkpoint['optimizer_state_dict'] = model.optimizer.state_dict()
 
 acc = overall_accuracy(model, dataloaders['test'])
 print('overall accuracy is:', acc)
