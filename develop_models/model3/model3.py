@@ -10,20 +10,16 @@ import torch.nn as nn
 from torch import optim, cuda
 from torch.optim import lr_scheduler
 import numpy as np
-import torchvision
-from torchvision import datasets, models, transforms
-from torchsummary import summary
+from torchvision import models, transforms
 import matplotlib.pyplot as plt
-import time
 import os
-import copy
 import pandas as pd
-import cv2 as cv
-from PIL import Image
-import load_data
-from load_data import ForamDataSet
-from importlib import reload
 from timeit import default_timer as timer
+import sys
+import tempfile
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from load_data import ForamDataSet
+
 
 plt.ion()   # interactive mode
 train_on_gpu = torch.cuda.is_available()
@@ -38,8 +34,6 @@ multi_gpu = False
 if train_on_gpu:
     gpu_count = cuda.device_count()
     print('{gpu_count} gpus detected.'.format(gpu_count=gpu_count))
-    if gpu_count > 1:
-        multi_gpu = True
         
 
 data_transforms = {
@@ -93,35 +87,67 @@ data_transforms = {
         transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
     ]),
 }
-
-data_dir = '../media'
+data_dir = '../training-images'
 image_datasets = {}
-image_datasets['train'] = ForamDataSet(csv_file='../train.csv',
-                                       root_dir='../media',
+arrangement = [[2,3,1,0]]
+# for num, arr in enumerate(arrangement):
+#     order = {}
+#     with tempfile.TemporaryDirectory() as dirpath:
+#         order['test'] = arr[0]
+#         order['val'] = arr[1]
+#         order['train'] = arr[2:]
+#         if len(order['train']) > 1:
+#             temp_frame = pd.concat([pd.read_csv('../data-csv/file{num}.csv'.format(num=i))
+#                                     for i in order['train']])
+#             temp_frame.to_csv(os.path.join(dirpath, 'train.csv'), encoding='utf-8', index=False)
+#         image_datasets['train'] = ForamDataSet(csv_file=os.path.join(dirpath, 'train.csv'),
+#                                                root_dir=data_dir,
+#                                                master_file='../data-csv/file0.csv',
+#                                                transform=data_transforms['train'])
+#         image_datasets['val'] = ForamDataSet(csv_file='../data-csv/file{i}.csv'.format(i=order['val']),
+#                                              root_dir=data_dir,
+#                                              master_file='../data-csv/file0.csv',
+#                                              transform=data_transforms['val'])
+#         image_datasets['test'] = ForamDataSet(csv_file='../data-csv/file{i}.csv'.format(i=order['test']),
+#                                               root_dir=data_dir,
+#                                               master_file='../data-csv/file0.csv',
+#                                               transform=data_transforms['test'])                                     
+#         dataloaders = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size=4,
+#                                                       shuffle=True, num_workers=4)
+#                        for x in ['train', 'val', 'test']}
+#         dataset_sizes = {x: len(image_datasets[x]) for x in ['train', 'val', 'test']}
+
+image_datasets['train'] = ForamDataSet(csv_file='../data-csv/file{i}.csv'.format(i=0),
+                                       root_dir=data_dir,
+                                       master_file='../data-csv/file0.csv',
                                        transform=data_transforms['train'])
-image_datasets['val'] = ForamDataSet(csv_file='../val.csv',
-                                     root_dir='../media',
+image_datasets['val'] = ForamDataSet(csv_file='../data-csv/file{i}.csv'.format(i=1),
+                                     root_dir=data_dir,
+                                     master_file='../data-csv/file0.csv',
                                      transform=data_transforms['val'])
-image_datasets['test'] = ForamDataSet(csv_file='../test.csv',
-                                     root_dir='../media',
-                                     transform=data_transforms['test'])                                     
+image_datasets['test'] = ForamDataSet(csv_file='../data-csv/file{i}.csv'.format(i=2),
+                                      root_dir=data_dir,
+                                      master_file='../data-csv/file0.csv',
+                                      transform=data_transforms['test'])                                     
 dataloaders = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size=4,
-                                             shuffle=True, num_workers=4)
-              for x in ['train', 'val', 'test']}
+                                              shuffle=True, num_workers=4)
+                for x in ['train', 'val', 'test']}
 dataset_sizes = {x: len(image_datasets[x]) for x in ['train', 'val', 'test']}
 classes = image_datasets['train'].labels
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
+
 def train_better(model,
-          criterion,
-          optimizer,
-          train_loader,
-          valid_loader,
-          save_file_name,
-          max_epochs_stop=5,
-          n_epochs=20,
-          print_every=2):
+                criterion,
+                optimizer,
+                train_loader,
+                valid_loader,
+                save_file_name,
+                scheduler,
+                max_epochs_stop=5,
+                n_epochs=20,
+                print_every=2):
     """Train a PyTorch Model
 
     Params
@@ -169,6 +195,7 @@ def train_better(model,
         valid_acc = 0
 
         # Set to training
+        scheduler.step()
         model.train()
         start = timer()
 
@@ -298,12 +325,12 @@ def train_better(model,
     model.optimizer = optimizer
     # Record overall time and print out stats
     total_time = timer() - overall_start
-    print(
-        '\nBest epoch: {best_epoch} with loss: {valid_loss_min:.2f} and acc: {100 * valid_acc:.2f}%'.format(best_epoch=best_epoch, valid_loss_min=valid_loss_min, valid_acc=valid_acc)
-    )
-    print(
-        '{total_time:.2f} total seconds elapsed. {total_time / (epoch):.2f} seconds per epoch.'.format(total_time=total_time, per_epoch=total_time/epoch)
-    )
+    # print(
+    #     '\nBest epoch: {best_epoch} with loss: {valid_loss_min:.2f} and acc: {100 * valid_acc:.2f}%'.format(best_epoch=best_epoch, valid_loss_min=valid_loss_min, valid_acc=valid_acc)
+    # )
+    # print(
+    #     '{total_time:.2f} total seconds elapsed. {total_time / (epoch):.2f} seconds per epoch.'.format(total_time=total_time, per_epoch=total_time/epoch)
+    # )
     # Format history
     history = pd.DataFrame(
         history,
@@ -312,7 +339,7 @@ def train_better(model,
 
 def create_model(model_type):
     criteria = {}
-    if model_type == 'the_first':
+    if model_type == 'resnet':
         model = models.resnet18(pretrained=True)
         num_ftrs = model.fc.in_features
         model.fc = nn.Linear(num_ftrs, len(classes)) # resets finaly layer
@@ -334,7 +361,6 @@ def create_model(model_type):
         criterion = nn.NLLLoss()
         optimizer = optim.Adam(model.parameters())
         
-    summary(model, input_size=(3, 224, 224))
     if train_on_gpu:
         model = model.to('cuda')
 
@@ -346,29 +372,67 @@ def create_model(model_type):
     criteria['train_loader'] = dataloaders['train']
     criteria['valid_loader'] = dataloaders['val']
     criteria['save_file_name'] = save_file_name
+    criteria['scheduler'] = exp_lr_scheduler
     criteria['n_epochs'] = 20
-    model.idx_to_class = {num:species for num,species in enumerate(image_datasets['train'].labels)}
+    model.idx_to_class = {num: species for num, species in enumerate(image_datasets['train'].labels)}
     model, history = train_better(**criteria)
     return model, history
 
 
-model, history = create_model('vgg')
+def accuracy(output, target, topk=(1, )):
+    """
+    Compute the topk accuracy(s)
+    target: the correct labelled answer
+    """
+    if train_on_gpu:
+        output = output.to(device)
+        target = target.to(device)
+
+    with torch.no_grad():
+        maxk = max(topk)
+        batch_size = target.size(0)
+
+        # Find the predicted classes and transpose
+        _, pred = output.topk(k=maxk, dim=1, largest=True, sorted=True)
+        pred = pred.t()
+        # Determine predictions equal to the targets
+        correct = pred.eq(target.view(1, -1).expand_as(pred))
+        res = []
+
+        # For each k, find the percentage of correct
+        for k in topk:
+            correct_k = correct[:k].view(-1).float().sum(0, keepdim=True)
+            res.append(correct_k.mul_(100.0 / batch_size).item())
+        return res
+
+
+def overall_accuracy(model, test_loader):
+    model.eval()
+    with torch.no_grad():
+        counter = 0
+        result = 0
+        # Testing loop
+        for data, targets in test_loader:
+            if train_on_gpu:
+                data, targets = data.to(device), targets.to(device)
+            # Raw model output
+            result += accuracy(model(data), targets)[0]
+            counter += 1
+    return result / counter
+
+
+model, history = create_model('resnet')
 history.to_csv('history3.csv')
 checkpoint = {
     'idx_to_class': model.idx_to_class,
     'epochs': model.epochs,
 }
 
-if multi_gpu:
-    checkpoint['classifier'] = model.module.classifier
-    checkpoint['state_dict'] = model.module.state_dict()
-else:
-    checkpoint['classifier'] = model.classifier
-    checkpoint['state_dict'] = model.state_dict()
+checkpoint['state_dict'] = model.state_dict()
 
 # Add the optimizer
-checkpoint['optimizer'] = model.optimizer
-checkpoint['optimizer_state_dict'] = model.optimizer.state_dict()
 
+acc = overall_accuracy(model, dataloaders['test'])
+print('overall accuracy is:', acc)
 # Save the data to the path
 torch.save(checkpoint, checkpoint_path)

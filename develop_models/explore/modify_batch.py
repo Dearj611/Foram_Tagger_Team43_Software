@@ -148,72 +148,6 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=25):
 
 def create_model(model_type, classes):
     criteria = {}
-    if model_type == 'resnet':
-        model = models.resnet18(pretrained=True)
-        num_ftrs = model.fc.in_features
-        model.fc = nn.Linear(num_ftrs, len(classes)) # resets finaly layer
-        criterion = nn.CrossEntropyLoss()
-        optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
-        exp_lr_scheduler = lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
-
-    if model_type == 'resnet18_partial':
-        model = models.resnet18(pretrained=True)
-        for param in model.parameters():
-            if 512 in param.shape:
-                break
-            param.requires_grad = False
-        num_ftrs = model.fc.in_features
-        model.fc = nn.Linear(num_ftrs, len(classes)) # resets finaly layer
-        criterion = nn.CrossEntropyLoss()
-        optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
-        exp_lr_scheduler = lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
-
-    if model_type == 'resnet18_partial_2':
-        model = models.resnet18(pretrained=True)
-        for param in model.parameters():
-            if 256 in param.shape:
-                break
-            param.requires_grad = False
-        num_ftrs = model.fc.in_features
-        model.fc = nn.Linear(num_ftrs, len(classes)) # resets finaly layer
-        criterion = nn.CrossEntropyLoss()
-        optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
-        exp_lr_scheduler = lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
-    
-    if model_type == 'resnet18_partial_3':
-        model = models.resnet18(pretrained=True)
-        for param in model.parameters():
-            if 128 in param.shape:
-                break
-            param.requires_grad = False
-        num_ftrs = model.fc.in_features
-        model.fc = nn.Linear(num_ftrs, len(classes)) # resets finaly layer
-        criterion = nn.CrossEntropyLoss()
-        optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
-        exp_lr_scheduler = lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
-    
-    if model_type == 'resnet18_partial_3':
-        model = models.resnet18(pretrained=True)
-        for param in model.parameters():
-            if 128 in param.shape:
-                break
-            param.requires_grad = False
-        num_ftrs = model.fc.in_features
-        model.fc = nn.Linear(num_ftrs, len(classes)) # resets finaly layer
-        criterion = nn.CrossEntropyLoss()
-        optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
-        exp_lr_scheduler = lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
-
-    if model_type == 'resnet18_freeze_all':
-        model = models.resnet18(pretrained=True)
-        for param in model.parameters():
-            param.requires_grad = False
-        num_ftrs = model.fc.in_features
-        model.fc = nn.Linear(num_ftrs, len(classes)) # resets finaly layer
-        criterion = nn.CrossEntropyLoss()
-        optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
-        exp_lr_scheduler = lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
-    
     if model_type == 'resnet18_untrained':
         model = models.resnet18(pretrained=False)
         num_ftrs = model.fc.in_features
@@ -231,6 +165,7 @@ def create_model(model_type, classes):
     criteria['optimizer'] = optimizer
     criteria['criterion'] = criterion
     criteria['scheduler'] = exp_lr_scheduler
+    criteria['num_epochs'] = 50
     model.idx_to_class = {num:species for num,species in enumerate(classes)}
     model, history = train_model(**criteria)
     return model, history
@@ -280,72 +215,62 @@ def overall_accuracy(model, test_loader):
 data_dir = '../training-images'
 image_datasets = {}
 record = []
-all_models = ['resnet18_partial', 'resnet18_partial_2', 'resnet18_partial_3']
-for mod, model_to_use in enumerate(all_models):
-    arrangement =  [[0,1,2,3], [1,2,3,0], [2,3,1,0], [3,0,1,2]]
-    for num, arr in enumerate(arrangement):
-        order = {}
-        with tempfile.TemporaryDirectory() as dirpath:
-            order['test'] = arr[0]
-            order['val'] = arr[1]
-            order['train'] = arr[2:]
-            if len(order['train']) > 1:
-                temp_frame = pd.concat([pd.read_csv('../data-csv/file{num}.csv'.format(num=i))
-                                        for i in order['train']])
-                temp_frame.to_csv(os.path.join(dirpath, 'train.csv'), encoding='utf-8', index=False)
-            image_datasets['train'] = ForamDataSet(csv_file=os.path.join(dirpath, 'train.csv'),
-                                                root_dir=data_dir,
-                                                master_file='../data-csv/file0.csv',
-                                                transform=data_transforms['train'])
-            image_datasets['val'] = ForamDataSet(csv_file='../data-csv/file{i}.csv'.format(i=order['val']),
-                                                root_dir=data_dir,
-                                                master_file='../data-csv/file0.csv',
-                                                transform=data_transforms['val'])
-            image_datasets['test'] = ForamDataSet(csv_file='../data-csv/file{i}.csv'.format(i=order['test']),
-                                                root_dir=data_dir,
-                                                master_file='../data-csv/file0.csv',
-                                                transform=data_transforms['test'])                                     
-            dataloaders = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size=4,
-                                                        shuffle=True, num_workers=4)
-                        for x in ['train', 'val', 'test']}
-            dataset_sizes = {x: len(image_datasets[x]) for x in ['train', 'val', 'test']}
-            classes = image_datasets['train'].labels
-            model, history = create_model(model_to_use, classes)    # training starts
-            history.to_csv('resnet-{x}-{i}.csv'.format(x=mod, i=num))
-            checkpoint = {
-                'idx_to_class': model.idx_to_class,
-            }
-            if multi_gpu:
-                checkpoint['classifier'] = model.fc
-                checkpoint['state_dict'] = model.module.state_dict()
-            else:
-                checkpoint['classifier'] = model.fc
-                checkpoint['state_dict'] = model.state_dict()
+model_to_use = 'resnet18_untrained'
+arrangement =  [[0,1,2,3], [1,2,3,0], [2,3,1,0], [3,0,1,2]]
+for num, arr in enumerate(arrangement):
+    order = {}
+    with tempfile.TemporaryDirectory() as dirpath:
+        order['test'] = arr[0]
+        order['val'] = arr[1]
+        order['train'] = arr[2:]
+        if len(order['train']) > 1:
+            temp_frame = pd.concat([pd.read_csv('../data-csv/file{num}.csv'.format(num=i))
+                                    for i in order['train']])
+            temp_frame.to_csv(os.path.join(dirpath, 'train.csv'), encoding='utf-8', index=False)
+        image_datasets['train'] = ForamDataSet(csv_file=os.path.join(dirpath, 'train.csv'),
+                                               root_dir=data_dir,
+                                               master_file='../data-csv/file0.csv',
+                                               transform=data_transforms['train'])
+        image_datasets['val'] = ForamDataSet(csv_file='../data-csv/file{i}.csv'.format(i=order['val']),
+                                             root_dir=data_dir,
+                                             master_file='../data-csv/file0.csv',
+                                             transform=data_transforms['val'])
+        image_datasets['test'] = ForamDataSet(csv_file='../data-csv/file{i}.csv'.format(i=order['test']),
+                                              root_dir=data_dir,
+                                              master_file='../data-csv/file0.csv',
+                                              transform=data_transforms['test'])                                     
+        dataloaders = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size=32,
+                                                      shuffle=True, num_workers=4)
+                       for x in ['train', 'val', 'test']}
+        dataset_sizes = {x: len(image_datasets[x]) for x in ['train', 'val', 'test']}
+        classes = image_datasets['train'].labels
+        model, history = create_model(model_to_use, classes)    # training starts
+        # history.to_csv('resnet{i}.csv'.format(i=num))
+        checkpoint = {
+            'idx_to_class': model.idx_to_class,
+        }
+        if multi_gpu:
+            checkpoint['classifier'] = model.fc
+            checkpoint['state_dict'] = model.module.state_dict()
+        else:
+            checkpoint['classifier'] = model.fc
+            checkpoint['state_dict'] = model.state_dict()
 
-            # Add the optimizer
-            try:
-                checkpoint['optimizer'] = model.optimizer
-                checkpoint['optimizer_state_dict'] = model.optimizer.state_dict()
-            except Exception as e:
-                print(str(e))
-            # torch.save(checkpoint, 'resnet18-{i}.pth'.format(i=num))
-            # torch.save(model.state_dict(), './resnet18{i}.pth'.format(i=num))     # save model here
-            # print('saved model to' + 'resnet18-{i}.pth'.format(i=num))
-            acc = overall_accuracy(model, dataloaders['test'])
-            record.append(acc)
-            print('overall accuracy is:', acc)
+        # Add the optimizer
+        try:
+            checkpoint['optimizer'] = model.optimizer
+            checkpoint['optimizer_state_dict'] = model.optimizer.state_dict()
+        except Exception as e:
+            print(str(e))
+        # torch.save(checkpoint, 'resnet18-{i}.pth'.format(i=num))
+        # torch.save(model.state_dict(), './resnet18{i}.pth'.format(i=num))     # save model here
+        # print('saved model to' + 'resnet18-{i}.pth'.format(i=num))
+        acc = overall_accuracy(model, dataloaders['test'])
+        record.append(acc)
+        print('overall accuracy is:', acc)
 
 print(record)
 
-# Model performs way worse when batch-size=32 than when 4
-[85.15625, 85.15625, 86.45833333333333, 84.96732023650524] # partial
-[88.54166666666667, 86.19791666666667, 88.02083333333333, 87.00980392156863] #partial_2
-
-[67.1875, 69.53125, 69.79166666666667, 66.25816992217419] # freeze all
-[49.21875, 52.083333333333336, 45.052083333333336, 49.91830062866211] # untrained
-[37.239583333333336, 42.1875, 34.375, 39.79933107816256] # untrained
-'''
-85.41666666666667, 85.67708333333333, 85.67708333333333, 86.68300651101505 unfreeze fourth layer
-86.97916666666667, 87.5, 89.58333333333333, 87.00980392156863 unfreeze third, fourth layer
-89.32291666666667, 89.0625, 90.10416666666667, 89.70588235294117 unfreeze third, fourth, 2nd layer
-'''
+[85.15625, 85.15625, 86.45833333333333, 84.96732023650524]
+[88.54166666666667, 86.19791666666667, 88.02083333333333, 87.00980392156863]
+[67.1875, 69.53125, 69.79166666666667, 66.25816992217419]

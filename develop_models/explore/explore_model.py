@@ -231,7 +231,7 @@ def overall_accuracy(model, test_loader):
 
 data_dir = '../training-images'
 image_datasets = {}
-all_lr = [0.0005+(0.0001*i) for i in range(1,11)] # learning rates to test
+all_lr = [0.001+(0.0002*i) for i in range(1,11)] # learning rates to test
 # all_lr += [0.001*i for i in range(1,6)]
 # all_lr += [0.01*i for i in range(1,6)]
 # all_lr += [0.1*i for i in range(1,6)]
@@ -266,7 +266,7 @@ for num, arr in enumerate(arrangement):
         dataset_sizes = {x: len(image_datasets[x]) for x in ['train', 'val', 'test']}
         classes = image_datasets['train'].labels
         for lr in all_lr:
-            model, _ = create_model('resnet34', classes, lr)    # training starts
+            model, _ = create_model('resnet18', classes, lr)    # training starts
             checkpoint = {
                 'idx_to_class': model.idx_to_class,
             }
@@ -291,4 +291,4 @@ for num, arr in enumerate(arrangement):
 record = pd.DataFrame(
     record,
     columns=['learning_rate', 'overall_accuracy'])
-record.to_csv('./record_34.csv')
+record.to_csv('./record_3.csv')
