@@ -11,8 +11,3 @@ sudo mysql.server start
 
 To ensure we are using the same version of libraries:
 pip install -r requirements.txt
-
-To run our image_segmentation.py, opencv and re, solution:
-pip install opencv-python
-change "from regex as re" to "import re"
-pip install matplotlib

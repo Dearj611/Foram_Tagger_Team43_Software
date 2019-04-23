@@ -18,7 +18,7 @@ class BasicUploadView(View):
                 parent.custom_url = parent.imgEdited.url[1:]
                 parent_list.append(parent)
                 child = Img.objects.filter(parentImage=parent)
-                temp_list=[]
+                temp_list = []
                 for c in child:
                     c.custom_url = c.imgLocation.url[1:]
                     temp_list.append(c)
@@ -66,7 +66,7 @@ def showImg(request):
         Img.objects.filter(pk=request.POST['img_id']).update(species=corrected_species)
         url = request.POST['original_url']
         return redirect(url)
-    imgs = Img.objects.all() # 从数据库中取出所有的图片路径
+    imgs = Img.objects.all()
     context = {
         'imgs' : imgs
     }
@@ -74,16 +74,10 @@ def showImg(request):
 
 
 def clear_database(request):
+    # function not currently in use
     for species in Species.objects.all():
         species.delete()
     for photo in Img.objects.all():
         photo.imgLocation.delete()
         photo.delete()
     return redirect('uploadImage')
-
-'''
-Notes on what runs first
-1. The else statement in post
-2. The get method
-
-'''

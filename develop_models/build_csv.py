@@ -1,8 +1,11 @@
 import os
 import pandas as pd
-
+# This file builds the csv files for our dataset, which allows us to later perform cross-fold validation
 
 def build_files(path, num_of_files=4, store_path='./data-csv'):
+    '''
+    path: image directory (can be of varying depth)
+    '''
     num_of_species = len(os.listdir(path))
     builder = {i:[] for i in range(num_of_files)}
     for dirpath, dirs, filename in os.walk(path):
